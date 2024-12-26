@@ -96,6 +96,80 @@ readDataSet<-function(n) {
   dfdata %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
 }
 dfout<-readDataSet("WE 30 November 2023")
+#---------------------------------------------------------------------------------------
+# Find night time bands 
+#---------------------------------------------------------------------------------------
+findBands<-function(df) {
+  sunbreak=0.05*max(df$`Solar (Rooftop) - MW`)  # 5 percent of max is start of day
+  dark<-(df$`Solar (Rooftop) - MW`<sunbreak)    # which periods are dark
+  ldld<-which(dark[-1] != dark[-length(dark)])  # where are the changes of state
+  darkdf<-tribble(~t1,~t2)
+  st<-2                                         
+  if (dark[1]) {                                # are we starting in the night or the day?
+    tmp<-tibble(t1=df$Time[1],t2=df$Time[ldld[1]])
+    darkdf<-bind_rows(darkdf,tmp)
+    st<-3
+  }
+  for (i in seq(st,length(ldld),2)) {
+    tmp<-tibble(t1=df$Time[ldld[i-1]],t2=df$Time[ldld[i]])
+    darkdf<-bind_rows(darkdf,tmp)
+  }
+  darkdf
+}
+
+#-----------------------------------------------------------------
+# set up labels and colours for the plots
+#-----------------------------------------------------------------
+colswind<-c(
+  "demand"="brown",
+  "wind"="forestgreen"
+)
+labswind<-c(
+  "Demand",
+  "Wind"
+)
+colsshort<-c(
+  "renew"="purple",
+  "dblrenew"="cyan",
+  "demand"="brown"
+)
+labsshort<-c(
+  "Overbuild",
+  "Demand",
+  "Wind+Solar"
+)
+colsbreaks<-c( "dblrenew", "demand", "renew","wind")
+colslabels<-c( "Overbuild", "Demand", "Wind+Solar","Wind")
+colslevels<-c(
+  "dblrenew"="cyan",
+  "demand"="brown",
+  "renew"="purple",
+  "wind"="forestgreen"
+)
+
+colsfacilities<-c(
+  "Wind"="forestgreen",
+  "Solar (Utility),Wind"="cyan",
+  "Solar (Utility)"="yellow",
+  "Gas (Steam)"="bisque4",
+  "Gas (Reciprocating)"="bisque3",
+  "Gas (OCGT)"="bisque2",
+  "Gas (CCGT)"="bisque1",
+  "Distillate"="grey42",
+  "Bioenergy (Biogas)"="brown",
+  "Battery (Discharging),Solar(Utility)"="blue",
+  "Battery (Discharging)"="blue"
+)
+cols<-c(
+  "Biomass"="brown",
+  "Solar"="yellow",
+  "Wind"="forestgreen",
+  "Nuclear"="purple",
+  "Hydro"="blue",
+  "kWh/Person"="bisque1",
+  "IEA2050Target"="grey70"
+)  
+
 #-----------------------------------------------------------------
 # Calc: the main function which calculates the flow of electricity
 # between the generators and batteries
@@ -229,25 +303,19 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                 verticalLayout(
                   mainPanel(
                     tabsetPanel(type="tabs",
-                                tabPanel("SA Data",
-                                         markdownFile("ob0.txt"),
-                                         fluidRow(align="center",imageOutput("weekpng",height=400)),
-                                         markdownFile("ob1a.txt"),
+                                tabPanel("Dashboard",
                                          fluidRow(
                                            column(width=6,
+                                                  selectInput("datasetpick",choices=sort(names(dataSets)),
+                                                              selected=c("WE 30 November 2023"),
+                                                              multiple=FALSE,
+                                                              label = 'Datasets'
+                                                  ), 
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
                                                   checkboxInput("showBatteryStatus",label="Show batteryStatus (%)",value=FALSE),
-                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0),
+                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0)
                                                   #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
-                                                  pickerInput("datasetpick",choices=sort(names(dataSets)),selected=c("WE 30 November 2023"),multiple=FALSE,
-                                                              label = 'Alternative datasets',
-                                                              options = pickerOptions(
-                                                                actionsBox = TRUE,
-                                                                selectedTextFormat = 'static',
-                                                                noneSelectedText = 'Select',
-                                                              )
-                                                  ) 
                                            ),
                                            column(width=6,
                                                   sliderInput("ofac",label="Overbuild factor for wind+solar", min=1,max=3,step=0.1,value=1),
@@ -262,11 +330,20 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                          fluidRow(
                                            column(width=12,
                                                   plotOutput("shortfall")
-                                           ),
+                                           )
+                                         )
+                                ),
+                                tabPanel("Dashboard statistics",
+                                         fluidRow(
                                            column(width=12,
                                                   uiOutput("calcresult")
                                            )
-                                         ),
+                                         )
+                                ),
+                                tabPanel("Help",
+                                         markdownFile("ob0.txt"),
+                                         fluidRow(align="center",imageOutput("weekpng",height=400)),
+                                         markdownFile("ob1a.txt"),
                                          markdownFile("ob1b.txt")
                                 ),
                                 tabPanel("About",
@@ -282,19 +359,193 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+    mtheme<-theme(plot.margin=unit(c(5,0,0,0),"mm"))
+    ptheme<-theme(plot.title=element_text(color="#008080",size=15,face="bold",family="Helvetica"),
+                axis.text=element_text(face="bold",size=12))+mtheme
+    gendfsum<-reactive({
+      print(input$datasetpick)
+      bstatus<-calc(input$bsize*input$bmult,input$ofac,input$icsize,input$datasetpick,input$blmult*input$baseloadsize)
+      dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
+      write_csv(dfile,"bcalc-output.csv")
+      bstatus
+    })
 
     output$calcresult <- renderUI({
-      print("UIUIUIUI")
+      output$bcalcresult<-renderUI({
+        dfsum<-gendfsum()
+        totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
+        sh<-dfsum %>% summarise(max(cumShortMWh))
+        curt<-dfsum %>% summarise(max(cumThrowOutMWh))
+        bsup<-dfsum %>% summarise(sum(batterySupplied))
+        bmax<-dfsum %>% summarise(max(batterySupplied*12))
+        dmand<-dfsum %>% summarise(sum(dblrenew/12))
+        shortMW<-dfsum %>% summarise(max(maxShortMW))
+        
+        hrs<-8
+        dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
+        #write_csv(dfsum,"tmp-dfsum.csv")
+        dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
+        dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
+        r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
+        rnights<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% filter(hour(Time)*60+minute(Time)==9*60) 
+        #write_csv(rnights,"tmp-rnights.csv")
+        maxwind<-max(dfsum$wind)
+        minwind<-min(dfsum$wind)
+        
+        dfsum$windhr<-roll_sum(dfsum$wind/12,n=12,fill=0)
+        dfsum$wind8hr<-roll_sum(dfsum$wind/12,n=12*8,fill=0)
+        minwindhr<-min(dfsum$windhr[dfsum$windhr>0])
+        maxwindhr<-max(dfsum$windhr)
+        minwind8hr<-min(dfsum$wind8hr[dfsum$wind8hr>0])
+        maxwind8hr<-max(dfsum$wind8hr)
+        print(paste0("MinWindHr ",minwindhr))
+        print(paste0("MaxWindHr ",maxwindhr))
+        print(paste0("MinWind8Hr ",minwind8hr))
+        print(paste0("MaxWind8Hr ",maxwind8hr))
+        write_csv(dfsum,"xxx1.csv")
+        
+        #      p("NSW - annual avg power 8.5GW (2023/4)"),
+        #      p("QLD - annual avg power 7.1GW (2023/4)"),
+        onshortages<-""
+        onbattmult<-""
+        for(i in 1:nrow(rnights)) {
+          d<-rnights$diff[i]
+          t<-day(rnights$Time[i])
+          if (d<0) {
+            onshortages<-paste0(onshortages," ",t,":",comma(-d)," MWh ")
+            onbattmult<-paste0(onbattmult," ",t,":",comma(-d/(input$bmult*input$bsize)),"x ")
+          }
+        }
+        
+        
+        nperiods<-length(dfsum$Time)
+        tags$div(class="standout-container",
+                 annual,
+                 p("Total Period Demand: ",comma(totdemand/1000)," GWh"),
+                 p("Period length: ",comma((nperiods/12)/24)," days"),
+                 p("Overbuild factor: ",comma(input$ofac),""),
+                 #     p("Electrification expansion factor: ",comma(input$dfac),""),
+                 p("Shortfall over period: ",comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
+                 p("Baseload size: ",comma(input$blmult*input$baseloadsize)," MW"),
+                 p("Curtailment: ",comma(curt/1000)," GWh (",comma(100*curt/dmand),"percent)"),
+                 p("Max MW shortage: ",comma(shortMW)," dispatchable MW"),
+                 p("Battery energy storage size: ",comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)" ),
+                 p("Battery energy supplied: ",comma(bsup/1000)," GWh"),
+                 p("Max battery power: ",comma(bmax)," MW"),
+                 p("Max wind power(5 min): ",comma(maxwind)," MW (Min ",comma(minwind),"MW",comma(minwind/maxwind*100),"%)"),
+                 p("Max wind energy(60 min): ",comma(maxwindhr)," MWh (Min ",comma(minwindhr),"MWh",comma(minwindhr/maxwindhr*100),"%)"),
+                 p("Max wind energy(8 hrs): ",comma(maxwind8hr)," MWh (Min ",comma(minwind8hr),"MWh",comma(minwind8hr/maxwind8hr*100),"%)"),
+                 p("Battery capacity factor: ",comma(100*bsup/((bmax/12)*nperiods)),"%"),
+                 p("Interconnector export size: ",comma(input$icsize)," MWh"),
+                 {if (length(r$diff)==1) {
+                   p("Max ",comma(hrs),"hr shortage (endpoint) ",r$Time,": ",comma(-r$diff),"MWh")
+                 }},
+                 p("Overnight Shortages: ",onshortages),
+                 p("Battery shortfallss: ",onbattmult),
+                 p("(Battery shortfalls ... the multiple of configured batterysizes to supply the shortfall)"),
+                 p("")
+        )
+      })
     })
     output$shortfall <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
+      dfsum<-gendfsum()
+      #write_csv(dfsum,"xxx1.csv")
+      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh)
+      maxsupply=max(dfsum$dblrenew)
+      bl<-ifelse((input$blmult*input$baseloadsize)>0,paste0("BL",input$blmult*input$baseloadsize,"MW"),"nobl")
+      bsz<-ifelse((input$bmult*input$bsize)>0,paste0("BATT",comma(input$bsize*input$bmult),"MW"),"nobatt")
+      ovfac<-ifelse(input$ofac>0,paste0("FAC",comma(input$ofac),""),"nooverbuild")
+      ff<-gsub(" ","",input$datasetpick)
+      fname=paste0("dfsum-",bl,"-",bsz,"-",ovfac,"-",ff,".csv")
+      write_csv(dfsum,fname)
+      maxshort<-max(dfcumshort$cumShortMWh)
+      maxcurt<-max(dfcumshort$cumThrowOutMWh)
+      
+      thecols=colsshort
+      thelabs=labsshort
+      dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","renew","dblrenew"),names_to="Level",values_to="MW") 
+      thetitle=dataSetTitles[input$datasetpick]
+      if (input$showWindDemand) {
+        dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
+        x<-str_split_1(thetitle,"\n")
+        print(x)
+        thetitle<-paste0("Electricity demand vs wind\n",x[2])
+        thecols=colswind
+        thelabs=labswind
+      }
+      nperiods<-length(dfsum$Time)
+      lab<-c()
+      val<-c()
+      if (input$showShort) {
+        lab=c("Shortfall (cumulative)")
+        val=c("dashed")
+      }
+      if (input$showCurtailed) {
+        lab=c(lab,"Curtailment")
+        val=c(val,"dotted")
+      }
+      if (input$showInterconnector) {
+        lab=c(lab,"Interconnector Export")
+        val=c(val,"twodash")
+      }
+      if (input$baseloadsize>0) {
+        lab=c(lab,"Baseload (MW)")
+        val=c(val,"longdash")
+      }
+      nightbands<-findBands(dfsum)
+      for(i in 1:nrow(nightbands)) {
+        cat(paste0())
+      }
+      bfac=input$bsize*input$bmult
+      if (bfac==0) bfac=1000
+      bfac=maxsupply
+      mm=max(maxshort,maxcurt,999)
+      if (maxshort==999) {
+        coef<-500*(3/28)
+      }
+      else {
+        coef=maxsupply/mm*1000
+      }
+      
+      print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
+      p<-dfcs %>% ggplot() + 
+        geom_line(aes(x=Time,y=MW,color=Level),linewidth=1) +  
+        ptheme +
+        {if (input$showShort)
+          geom_line(aes(x=Time,y=cumShortMWh*coef/1000,linetype="dashed"),data=dfsum)
+        }+
+        {if (input$showCurtailed)
+          geom_line(aes(x=Time,y=cumThrowOutMWh*coef/1000,linetype="dotted"),data=dfsum)
+        }+
+        {if (input$showInterconnector)
+          geom_line(aes(x=Time,y=cumIcExpMWh*coef/1000,linetype="twodash"),data=dfsum)
+        }+
+        {if (input$showBatteryStatus)  
+          geom_line(aes(x=Time,y=(batteryStatus/(input$bsize*input$bmult))*bfac),color="red",data=dfsum)
+        }+
+        {if (input$baseloadsize)  
+          geom_hline(aes(yintercept=input$blmult*input$baseloadsize,linetype="longdash"),color="purple",data=dfsum)
+        }+
+        {if (input$showBatteryStatus)  
+          annotate('text',x=dfcs$Time[nperiods/2],y=bfac,label="Battery 100% full",color="red",vjust=-0.2,hjust=0)
+        }+
+        {if (input$showShort)  
+          #geom_col(aes(x=Time,y=shortFall*12,alpha=0.2),color="orange",data=dfsum,show.legend=FALSE)
+          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.4,data=dfsum)
+        }+
+        {if (input$showShort)  
+          scale_fill_manual(name="Shortfall",labels=c("Shortfall"),values=c("orange"))
+        }+
+        geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
+        labs(color="Supply/Demand (MW)",title=thetitle)+
+        #scale_color_manual(labels=thelabs,values=thecols)+
+        scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
+        scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
+        scale_y_continuous(
+          name="Megawatts",
+          sec.axis = sec_axis(~./coef, name="Cumulative shortfall/curtailment in GWh")
+        )+theme(legend.direction="vertical",legend.box="vertical")
+      p
     })
 }
 
