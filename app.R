@@ -1,18 +1,29 @@
 #
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
+# This is a Shiny web application which illustrates the interactions of various
+# choices of generation, storage, and baseload capacity.
 
 library(shiny)
+library(shinyWidgets)
+library(shinythemes)
+library(tidyverse)
+library(markdown)
+library(plotly)
+library(RcppRoll)
+
+comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
+markdownFile<-function(filename) {
+  t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
+  #t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
+  markdown(t)
+}
+options(scipen=999)
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Samply Shiny Application"),
+    titlePanel("Grid impacts workbook"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
