@@ -1,0 +1,106 @@
+LABEL(ob1b)
+
+
+### Alternative datasets 
+
+The "Alternative datasets" button lists other weeks of data. At present I just have the dual heatwaves of 
+2019 that delivered so much suffering in South Australia.
+
+### June 2024 
+
+The lack of wind during June 2024 was extreme and provides an excellent example of the difficulties of using
+batteries to handle such shortfalls.
+
+It's also useful to illustrate how useful baseload power is in reducing both the overbuild and the battery
+requirements to handle large wind droughts. 
+
+### January 2024
+
+I've added two datasets for January 2024, the week ending on the 25th. They show the
+extraordinarily low wind during the nights of the 23rd and 24th of January. The 8 hours ending at 2am on the 24th
+had a wind+solar shortfall of 11,970 MWh; rather more than the 511 MWh we have at present. I subsequently downloaded
+data for Victoria; where we got the electricity to keep the lights on during these nights. 
+
+If you select the VIC dataset, you'll see that the night of the 24th was an extraordinarily low wind night, similar
+to that in South Australia. In a high penetration wind+solar system, they'd have been hard put to 
+be sending us anything. 
+
+### Wind vs Demand 
+
+There is a click box to show wind vs demand for the currently selected dataset. It may not "play well" with other
+selections ... it won't show any Overbuild renewable generation if you have some selected.
+
+### Fixing shortfalls with storage 
+
+Now let's look at how storage can smooth the intermittency of wind and solar.
+
+1. Click on the "Show Battery" tick box. The default battery is small, just 100MWh (the biggest battery
+in the world in 2016). The battery in the model isn't a real one, it has no power limit, just an energy storage capacity. If you've followed the instructions this far, you'll see 4 times during the week when the battery 
+is drained. It always begins the week full!
+
+   Now set the "Battery size" to 1,600 MWh. Now there are just two times during the week when it is drained. Currently, December 2023, SA has 511 MW of battery power a similar amount of energy storage; meaning that using 511 MW for an hour will drain almost everything. The biggest battery now is the Torrens BESS with 1 hour at 250MW. Then we have the original "World's biggest battery" installed after the blackout. It is 150MW and will run for a bit over an hour (194MWh). The other batteries are much smaller, 30MW, 25MW, 50MW and 6.3MW. 
+   
+   Since, at this stage we have no interconnectors in the model, a drained battery during a period of where wind+solar is less than the demand means a blackout. It's that simple; even when we assume double the level of wind+solar 
+   that supplies 72 percent on average. Think about that. We have 72% from wind+solar, double that amount and we'd 
+   still be blacked out during a significant part of the week ending 30th November; without Victorian coal.
+   
+2. Now click on the "Show dumped energy" tick box. You'll see about 160 GWh of electricity is dumped. Meaning we generated it, but even with 1,600 MWh of battery capacity we had to dump it. 
+
+This web document details a variety of ways in which wind and solar will break the grid, meaning that
+the most expensive part of our electricity supply will need to be significantly redesigned and rebuilt. But
+it is interesting to think about how much electricity storage you will need to fix the shortfall. 
+
+
+### What can you demonstrate with this kind of model? 
+
+With a doubling of renewables, the shortfall on the night of 24th of November is considerable; 5,463 MWh. The summary
+box shows the maximum power needed during the 8 hours; 340 MW.
+Could you cover this particular shortfall with 16 batteries each with a maximum power output of 340MW and lasting
+for 1 hour? That will depend on: 
+
+1. exactly where you put them. They have to be fully charged at the start of the period and whether a battery
+gets charged depends on where it is relative to any excess electricity which happens to be available. Grids, like
+city streets can become congested.  
+
+2. exactly where the power is required. Again, congestion has to be carefully modelled to make claims about what
+is possible. 
+
+In summary, the model I've built is more to give people a feel for the problems. A professional model would 
+take the physical locations and capabilities into account of every piece of equipment. My little model shows what you **can't** do; you can't solve the problems posed by this still night of the 24th November with anything less than
+5,463 MWh of storage, but it doesn't show how much more you will need than this to cover real world complexity.
+
+
+## Concluding remarks
+
+A large electricity grid is an astonishing creation requiring a considerable set of skills from a large set
+of teams. Australia has stumbled into its decision to try and build a 100% renewable system as a direct consequence
+of not looking seriously at the alternative; namely, leaving the grid substantially alone and just swap out the
+thermal coal plants of thermal nuclear plants.
+
+The decision to not consider nuclear seriously is partly the fault of the nuclear industry itself. It never 
+really came to grips with the improved understanding of cancer that was emerging in the 1980s and is still
+developing. How bizarre is it that you can walk into supermarkets and bottleshops anywhere in Australia and
+buy potent carcinogenic foodstuffs, but we ban nuclear power? 
+
+Anybody over 50 in Australia can get a [free bowel cancer screening kit](https://www.health.gov.au/our-work/national-bowel-cancer-screening-program). You get a little booklet which tells you:
+
+> *"People who smoke, are overweight, have a diet low in fresh vegetables and fruit, and high in red and processed meats, are at increased risk of **several cancers**" [emphasis added]
+
+That's about as good an example as you get of bolting the stable door a couple of decades after the horses have left.
+
+We have a myriad of organisations in Australia whose hands and lips are arc-welded to 
+both traditional anti-nuclear policies and traditional cancer causing foods; giving us a position near the
+top of the per person global cancer tables. 
+
+The idea that a plane could fly into a nuclear plant and unleash a disaster
+is a given for these groups and, I suspect, for the industry itself. 
+
+But could any such accident rival the cancer impacts of alcohol, red and processed 
+meat and tobacco? Impossible. The death toll from flying a plane into an office block would be
+considerably higher, so why don't we demand they be safe in the face of such attacks? Because that would stop the
+office block building in its tracks. The biggest impact of a successful attack on a nuclear plant has always
+been the direct impacts on the staff and the withdrawal of the service; the electricity. 
+Nevertheless the nuclear regulatory ratchet, tightened by fierce campaigning
+based on information now known to be false, remains just as tight as it has ever been. Leading to an industry
+bogged down by regulators and its own failure to push-back and unroll the barriers. 
+

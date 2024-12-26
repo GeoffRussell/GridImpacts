@@ -1,0 +1,15 @@
+LABEL(ob0)
+
+## A week of SA data
+
+Now here's a chart showing the makeup of a week's worth of electricity in SA during a mild spring
+week at the end of November 2023. 
+
+The horizontal axis is time and you can see the nights are marked
+by a grey vertical band. The vertical axis is power in megawatts. You can see that the wind farms
+(green band) produce a considerable portion of the total demand. 
+
+This was a week of mild temperatures; nobody needed heating or cooling. You can see that the
+maximum demand was about 1.7 gigawatts (1,700 megawatts). During a heatwave, demand would peak at just over double
+this; about 3.5 gigawatts.
+
