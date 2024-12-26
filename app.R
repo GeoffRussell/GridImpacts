@@ -18,6 +18,46 @@ markdownFile<-function(filename) {
 }
 options(scipen=999)
 
+#-----------------------------------------------------
+# Datasets
+#-----------------------------------------------------
+dataSets<-c(
+  "(VIC) WE 25 January 2024"="openNem-VIC-25-01-24-7D.csv",
+  "WE 16 May 2024"="openNem-SA-16-05-24-7D.csv",
+  "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
+  "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
+  "June 2024"="openNEMMerge-June-2024.csv",
+  "June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
+  "WE 30 January 2024"="openNem-SA-30-01-24-7D.csv",
+  "WE 30 November 2023"="opennem-30-11-2023sa5.csv",
+  "First heatwave, Dec 2019"="openNem-SA-21-12-19-7D.csv",
+  "Second heatwave, Dec 2019"="openNem-SA-28-12-19-7D.csv",
+  "March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
+)
+dataSetTitles<-c(
+  "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(Victoria) Week ending 25 Jan 2024",
+  "WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 16 May 2024",
+  "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nVIC Week ending 16 May 2024",
+  "(NEM) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nNEM Week ending 16 May 2024",
+  "June 2024"="Electricity renewable/demand/shortfall\nJune 2024",
+  "June 2024 (1st week only)"="Electricity renewable/demand/shortfall\n1st Week June 2024",
+  "WE 30 January 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 Jan 2024",
+  "WE 30 November 2023"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 November 2023",
+  "First heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 21 December 2019",
+  "Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 28 December 2019",
+  "March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 12 March 2024"
+)
+#-----------------------------------------------------
+# End Datasets
+# Check Datasets
+#-----------------------------------------------------
+for (i in dataSets) {
+  if (!file.exists(i)) {
+    cat("Missing: ",i,"\n") 
+  }
+} 
+
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
