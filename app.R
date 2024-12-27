@@ -3,6 +3,7 @@
 # choices of generation, storage, and baseload capacity.
 
 library(shiny)
+library(shinyjs)
 library(shinyWidgets)
 library(shinythemes)
 library(tidyverse)
@@ -18,6 +19,8 @@ markdownFile<-function(filename) {
   markdown(t)
 }
 options(scipen=999)
+tbgcolor="grey30"
+tfgcolor="white"
 
 #-----------------------------------------------------
 # Datasets
@@ -295,7 +298,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
 # UI
 #-----------------------------------------------------------------
 ui <- function(request) {
-    fluidPage(theme = shinytheme("cerulean"),
+    fluidPage(theme = shinytheme("slate"),
                 tags$head(
                   tags$style(
                     ".standout-container {margin: 20px 0; padding: 20px; font-weight: bold; background-color: Teal; 
@@ -309,12 +312,20 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("Grid impacts"),
+                titlePanel("Grid Impacts: Storage, overbuild and baseload"),
                 verticalLayout(
                   mainPanel(
-                    bookmarkButton("Save settings as URL for sharing "),
+                    fluidRow(
+                      column(width=12,align="right",div(style="height: 100px;", bookmarkButton("Save settings as URL for sharing ")))
+                    ),
+                    fluidRow(
+                      column(width=12,div(style="height: 30px;", " " ))
+                    ),
                     tabsetPanel(type="tabs",id="tabsetpanel",
                                 tabPanel("Dashboard",
+                                        fluidRow(
+                                          column(width=12,div(style="height: 50px;", " " ))
+                                        ),
                                          fluidRow(
                                            column(width=6,
                                                   selectInput("datasetpick",choices=sort(names(dataSets)),
@@ -382,6 +393,7 @@ server <- function(ui,input, output) {
     mtheme<-theme(plot.margin=unit(c(5,0,0,0),"mm"))
     ptheme<-theme(plot.title=element_text(color="#008080",size=15,face="bold",family="Helvetica"),
                 axis.text=element_text(face="bold",size=12))+mtheme
+    runjs('$("#mainPanel").css("width", "1200px");')
     gendfsum<-reactive({
       print(input$datasetpick)
       bstatus<-calc(input$bsize*input$bmult,input$ofac,input$icsize,input$datasetpick,input$blmult*input$baseloadsize)
@@ -428,7 +440,10 @@ server <- function(ui,input, output) {
                     paste0(r$Time,": ",comma(-r$diff),"MWh")
                     )
         )
-        df |> gt() |> tab_header(title="Output results") |> tab_options(table.width=pct(100),column_labels.hidden=T,heading.align="left")
+        df |> gt() |> tab_header(title="Output results") |> tab_options(table.width=pct(100),
+                                                                           table.background.color=tbgcolor,
+                                                                           table.font.color=tfgcolor,
+                                                                        column_labels.hidden=T,heading.align="left")
     })
     
     output$calctable <- render_gt({
@@ -447,7 +462,10 @@ server <- function(ui,input, output) {
           `1 Hour`=c(comma(maxwindhr),comma(minwindhr),paste0(comma(minwindhr/maxwindhr*100),"%")),
           `8 Hours`=c(comma(maxwind8hr),comma(minwind8hr),paste0(comma(minwind8hr/maxwind8hr*100),"%"))
         )
-        df |> gt() |> tab_header(title="Wind performance") |> tab_options(table.width=pct(100),heading.align="left")
+        df |> gt() |> tab_header(title="Wind performance") |> tab_options(table.width=pct(100),
+                                                                           table.background.color=tbgcolor,
+                                                                           table.font.color=tfgcolor,
+                                                                          heading.align="left")
     })
     output$calcparms <- render_gt({
         dfsum<-gendfsum()
@@ -460,7 +478,8 @@ server <- function(ui,input, output) {
           )
         )
         df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100),
-                                                                           table.background.color="grey90",
+                                                                           table.background.color=tbgcolor,
+                                                                           table.font.color=tfgcolor,
                                                                            column_labels.hidden=T,heading.align="left")
     })
     output$calcresult2 <- renderUI({
@@ -540,8 +559,10 @@ server <- function(ui,input, output) {
       }
       write_csv(dfn,"tmp-dfn.csv")
       str(dfn)
-      p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="blue")+labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage")
-      p 
+      p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="blue")+
+        geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=0))+
+        labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage")
+      p +theme_bw()
     })
     output$shortfall <- renderPlot({
       dfsum<-gendfsum()
@@ -641,7 +662,7 @@ server <- function(ui,input, output) {
           name="Megawatts",
           sec.axis = sec_axis(~./coef, name="Cumulative shortfall/curtailment in GWh")
         )+theme(legend.direction="vertical",legend.box="vertical")
-      p
+      p+theme_bw()
     })
 }
 
