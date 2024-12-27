@@ -344,7 +344,7 @@ ui <- function(request) {
                                            )
                                          )
                                 ),
-                                tabPanel("Dashboard statistics",
+                                tabPanel("Stats",
                                          fluidRow(
                                            column(width=12,
                                                   gt_output("calcparms"),
@@ -356,6 +356,9 @@ ui <- function(request) {
                                                    #uiOutput("calcresult2")
                                            )
                                          )
+                                ),
+                                tabPanel("Quick Start",
+                                         markdownFile("ob2.txt")
                                 ),
                                 tabPanel("Help",
                                          markdownFile("ob0.txt"),
@@ -387,6 +390,8 @@ server <- function(ui,input, output) {
       bstatus
     })
 
+    output$weekpng<-renderImage(list(src="WeekEnding30-11-2023.png",height=400),deleteFile=FALSE)
+    
     output$calctableexp <- renderUI({
         tags$div(
           p("The 8 hour column gives the highest amount of wind energy in any 8 hour period as will as the lowest in any 8 hour period. Similarly for the other periods, 5 minutes and 1 hour.")
