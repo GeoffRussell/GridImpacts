@@ -1,13 +1,16 @@
 LABEL(about)
 
-The source code for this website is available on [GitHub](https://github.com/GeoffRussell/SouthAustralianPower). It
+The source code for this website is available on [GitHub](https://github.com/GeoffRussell/GridImpacts). It
 is written in Shiny R.
 
-Data on this site comes either from the Statistical Review of World Energy, or OpenNEM.
+Most of the datasets are South Australian (SA) data.  This is because SA has more renewables per capita than any other state and so is better
+placed to illustrate the choices that will need to be made as renewable penetration increases.
+
+Data on this site comes either from OpenNEM, typically by downloading data from a [view](https://explore.openelectricity.org.au/energy/sa1/?range=7d&interval=5m&view=discrete-time&group=Detailed).
 
 ## Technical details about the OpenNEM data
 
-1. Demand is taken to be the sum of the following fields, basically everything except the "Exports - MW" field 
+1. **Demand** is taken to be the sum of the following fields, basically everything except the "Exports - MW" field 
 
 - Battery (Charging) - MW
 - Imports - MW
@@ -26,15 +29,18 @@ ie., the negative of the "Exports - MW". Note that the export field has a negati
 This assumption implies that all of the exported electricity is from the renewable sources. This
 may well be false, but it a fairly *renewable-generous* assumption.
 
-3. I assume that any interconnector capacity is only used for export. Currently, most of what is coming
-from Victoria will be coal based, but in future, this may not be true. The purpose of the model, as a whole
+3. If you set an interconnector capacity, it will be used for export. The tool is intended to show the impacts of
+various choices in the absence of a region being bailed out from elsewhere. 
+
+Currently for example, most of what is flowing to South Australia from Victoria will be coal based, but in future, 
+this may not be true. The purpose of the model, as a whole
 is to consider the implications of 100% renewables in Australia. In such a situation, the national grid won't
-have interconnectors from elsewhere to bail it out when we are short. We can only shift electricity around, not
+have reliable interconnectors from elsewhere to bail it out when we are short. We can only shift electricity around, not
 get any more. As Victoria and NSW get more wind and solar, any excess they have will compete for local
 excesses in SA. Will it be windy everywhere or will wind in one geographical region help bail out other
 regions? Perhaps I'll work out a way to usefully augment the model with interconnectors as inputs. In one
 sense an interconnector is just like a battery with a very large capacity. 
 
-Geoff Russell, December 2023
+Geoff Russell, January 2025
 
 
