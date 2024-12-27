@@ -313,7 +313,7 @@ ui <- function(request) {
                 verticalLayout(
                   mainPanel(
                     bookmarkButton("Save settings as URL for sharing "),
-                    tabsetPanel(type="tabs",
+                    tabsetPanel(type="tabs",id="tabsetpanel",
                                 tabPanel("Dashboard",
                                          fluidRow(
                                            column(width=6,
