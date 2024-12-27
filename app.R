@@ -346,8 +346,12 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                          fluidRow(
                                            column(width=12,
                                                   gt_output("calcparms"),
+                                                  gt_output("calcoutput"),
+                                                  plotOutput("onshortages"),
                                                   gt_output("calctable"),
-                                                  uiOutput("calcresult2")
+                                                  uiOutput("calctableexp")
+                                                  #,
+                                                   #uiOutput("calcresult2")
                                            )
                                          )
                                 ),
@@ -381,6 +385,45 @@ server <- function(input, output) {
       bstatus
     })
 
+    output$calctableexp <- renderUI({
+        tags$div(
+          p("The 8 hour column gives the highest amount of wind energy in any 8 hour period as will as the lowest in any 8 hour period. Similarly for the other periods, 5 minutes and 1 hour.")
+        )
+    })
+    
+    output$calcoutput <- render_gt({
+        dfsum<-gendfsum()
+        nperiods<-length(dfsum$Time)
+        totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
+        sh<-dfsum %>% summarise(max(cumShortMWh))
+        curt<-dfsum %>% summarise(max(cumThrowOutMWh))
+        bsup<-dfsum %>% summarise(sum(batterySupplied))
+        bmax<-dfsum %>% summarise(max(batterySupplied*12))
+        dmand<-dfsum %>% summarise(sum(dblrenew/12))
+        shortMW<-dfsum %>% summarise(max(maxShortMW))
+        
+        hrs<-8
+        dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
+        dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
+        dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
+        r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
+        df<-data_frame(
+          `Parameter`=c("Demand","Shortfall","Curtailment","Maximum power shortage (MW)","Battery energy supplied (MWh)",
+                        "Maximum battery power (MW)",
+                        "Battery capacity factor","Max 8hr shortage end time"),
+          `Value`=c(paste0(comma(totdemand/1000)," GWh"),
+                    paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
+                    paste0(comma(curt/1000)," GWh (",comma(100*curt/dmand),"%)"),
+                    paste0(comma(shortMW)," dispatchable MW"),
+                    paste0(comma(bsup/1000)," GWh"),
+                    paste0(comma(bmax)," MW"),
+                    paste0(comma(100*bsup/((bmax/12)*nperiods)),"%"),
+                    paste0(r$Time,": ",comma(-r$diff),"MWh")
+                    )
+        )
+        df |> gt() |> tab_header(title="Output results") |> tab_options(table.width=pct(100),column_labels.hidden=T,heading.align="left")
+    })
+    
     output$calctable <- render_gt({
         dfsum<-gendfsum()
         maxwind<-max(dfsum$wind)
@@ -393,11 +436,11 @@ server <- function(input, output) {
         maxwind8hr<-max(dfsum$wind8hr)
         df<-data_frame(
           ` `=c("Max energy in period (MWh)","Min energy over period (MWh)","% min of max"),
-          `5 Minutes`=c(comma(maxwind),comma(minwind),comma(minwind/maxwind*100)),
-          `1 Hour`=c(comma(maxwindhr),comma(minwindhr),comma(minwindhr/maxwindhr*100)),
-          `8 Hours`=c(comma(maxwind8hr),comma(minwind8hr),comma(minwind8hr/maxwind8hr*100))
+          `5 Minutes`=c(comma(maxwind),comma(minwind),paste0(comma(minwind/maxwind*100),"%")),
+          `1 Hour`=c(comma(maxwindhr),comma(minwindhr),paste0(comma(minwindhr/maxwindhr*100),"%")),
+          `8 Hours`=c(comma(maxwind8hr),comma(minwind8hr),paste0(comma(minwind8hr/maxwind8hr*100),"%"))
         )
-        df |> gt() |> tab_header(title="High and Low wind energy output levels") |> tab_options(table.width=pct(100))
+        df |> gt() |> tab_header(title="Wind performance") |> tab_options(table.width=pct(100),heading.align="left")
     })
     output$calcparms <- render_gt({
         dfsum<-gendfsum()
@@ -409,7 +452,9 @@ server <- function(input, output) {
           paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)")
           )
         )
-        df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100))
+        df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100),
+                                                                           table.background.color="grey90",
+                                                                           column_labels.hidden=T,heading.align="left")
     })
     output$calcresult2 <- renderUI({
         dfsum<-gendfsum()
@@ -460,23 +505,36 @@ server <- function(input, output) {
         tags$div(
         tags$div(class="standout-container",
                  annual,
-                 p("Total Period Demand: ",comma(totdemand/1000)," GWh"),
-                 p("Shortfall over period: ",comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
-                 p("Curtailment: ",comma(curt/1000)," GWh (",comma(100*curt/dmand),"percent)"),
-                 p("Max MW shortage: ",comma(shortMW)," dispatchable MW"),
-                 p("Battery energy supplied: ",comma(bsup/1000)," GWh"),
-                 p("Max battery power: ",comma(bmax)," MW"),
-                 p("Battery capacity factor: ",comma(100*bsup/((bmax/12)*nperiods)),"%"),
                  p("Interconnector export size: ",comma(input$icsize)," MWh"),
-                 {if (length(r$diff)==1) {
-                   p("Max ",comma(hrs),"hr shortage (endpoint) ",r$Time,": ",comma(-r$diff),"MWh")
-                 }},
-                 p("Overnight Shortages: ",onshortages),
                  p("Battery shortfallss: ",onbattmult),
                  p("(Battery shortfalls ... the multiple of configured batterysizes to supply the shortfall)"),
                  p("")
         )
         )
+    })
+    output$onshortages <- renderPlot({
+      dfsum<-gendfsum()
+      
+      hrs<-8
+      dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
+      dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
+      dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
+      rnights<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% filter(hour(Time)*60+minute(Time)==9*60) 
+      write_csv(rnights,"tmp-rnightsplot.csv")
+      dfn<-tibble()
+      for(i in 1:nrow(rnights)) {
+          d<-rnights$diff[i]
+          t<-day(rnights$Time[i])
+          dfn<-bind_rows(dfn,tibble('Day'=date(rnights$Time[i]),'Shortage'=-d))
+#          if (d<0) {
+#            onshortages<-paste0(onshortages," ",t,":",comma(-d)," MWh ")
+#            onbattmult<-paste0(onbattmult," ",t,":",comma(-d/(input$bmult*input$bsize)),"x ")
+#          }
+      }
+      write_csv(dfn,"tmp-dfn.csv")
+      str(dfn)
+      p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="blue")+labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage")
+      p 
     })
     output$shortfall <- renderPlot({
       dfsum<-gendfsum()
