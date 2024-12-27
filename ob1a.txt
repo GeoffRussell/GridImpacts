@@ -8,18 +8,20 @@ the data? I did notice the small choke point on the evening of the 24th of Novem
 it. I'd had the idea for this project for some time and just happened to make a start on that evening and so used
 that week's data. 
 
-If you visit the OpenNEM site now, you'll see a different image, because the make up of the 
+If you visit the OpenNEM site now, you'll see a different image, because the make up of the South Australian
 electricity supply is heavily dependent on the weather. 
 
 The OpenNem website graph is interactive, allowing you to explore features of the data in considerable detail. But the features software designers choose to measure and highlight never cover everything. 
 
-Look at the vertical axis, you can see 1,500 at the top left. That's 1,500 million watts, usually called mega-watts and abbreviated MW. As I mentioned, this is less than half of peak demand during a heat wave.
+Look at the vertical axis, you can see 1,500 at the top left. That's
+1,500 million watts, usually called mega-watts and abbreviated MW. As
+I mentioned, this is less than half of peak demand during a heat wave.
 
 The colours represent the different sources of electricity as explained in the legend below the graph; green is wind power. 
 
 ### Explainer: Power and energy
 
-Skip this if you understand the difference between power and energy. 
+Skip this section if you understand the difference between power and energy. 
 
 It's not really that complicated. Your electric jug
 will have a power rating on it somewhere which will give, obviously,
@@ -80,23 +82,31 @@ about as much as a single full sized nuclear plant.
 
 ### Getting a feel for the dynamics 
 
-The following chart is a simple model of the SA electricity system. It's simple enough 
+The "Dashboard Statistics" tab of this website is a (very) simplified model of an electricity grid. 
+
+It's simple enough 
 that anybody can play with it without an engineering degree. But complex enough to help
 train our intuition about power, energy, battery capacities and the like. 
 
-It takes the electricity demand in South Australia during a week and the wind+solar output
+Using the default dataset (From November 2023) it 
+takes the electricity demand in South Australia during a week and the wind+solar output
 during that week and displays them. Look at the graph and you can see the holes during the
 week where demand isn't met. It's one thing to say that SA gets 72 percent of its electricity
 from wind and solar **on average**, without understanding the size of the occasional gaps between
 demand and supply.
 
-Here's some exercises you can do with the model. The best way to learn from this model is to demolish
-it ... find all its flaws. That's really what it is for! 
+Here's some exercises you can do with the model. 
 
-1. Don't do anything, just look at the Demand and Wind+Solar curves. They look very different from the chart at the top of the page, but they aren't, they've just been isolated from the interconnector and gas inputs. Notice that the **Overbuild** factor starts at 1 ... so you won't see anything for that at all.
+1. Don't do anything, just look at the Demand and Wind+Solar curves. They look very different from the chart on
+the "Help" tab page, but they aren't, they've just been isolated from the interconnector and gas inputs. 
+Notice that the **Overbuild** factor starts at 1 ... so you won't see anything for that at all.
 
-2. Focus on the "Overbuild" slider and set it to something big like 2. Meaning we aim to double the amount of wind and solar while keeping the same proportions. In the real world, the output of such a doubling wouldn't simply
-be double the current output, but it wouldn't be wildly different.  You will see a cyan curve appear on the graph. 
+
+2. What is overbuild? Use your mouse to move the "Overbuild" slider to something big like 2. That will double the
+amount of generated wind+solar electricity; but keep the proportions the same.
+In the real world, the output of such a doubling wouldn't simply
+be double the current output, but it wouldn't be wildly different.  If you moved the Overbuild slider
+you will have seen a cyan curve appear on the graph. 
 
 ### The sliders
 
@@ -115,18 +125,6 @@ Have a look at the night of the 24th of November. It was a *very* still night. A
 have dialled in a doubling of wind+solar, the summary board shows
 an accumulated shortfall over the night of 5,463, even with twice the renewables that we have now. Can
 we fix that shortfall with storage?
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
