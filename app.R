@@ -294,9 +294,17 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
 # UI
 #-----------------------------------------------------------------
 ui <- fluidPage(theme = shinytheme("cerulean"),
-                tags$head(tags$style(".standout-container {margin: 20px 0; padding: 20px; font-weight: bold; background-color: Teal; color: white;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-                       }")), 
+                tags$head(
+                  tags$style(
+                    ".standout-container {margin: 20px 0; padding: 20px; font-weight: bold; background-color: Teal; 
+                color: white; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); } "
+                  ),
+                  tags$style(".grey-container {margin: 20px 0; padding: 20px; font-weight: bold; background-color: Grey; 
+                color: white; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); } "
+                ),
+                  tags$style(".bold-container {margin: 20px 0; padding: 20px; font-weight: bold; } "
+                )
+                ), 
                 
                 # Application title
                 titlePanel("Grid impacts"),
@@ -371,7 +379,6 @@ server <- function(input, output) {
     })
 
     output$calcresult <- renderUI({
-      output$bcalcresult<-renderUI({
         dfsum<-gendfsum()
         totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
         sh<-dfsum %>% summarise(max(cumShortMWh))
@@ -419,17 +426,22 @@ server <- function(input, output) {
         
         
         nperiods<-length(dfsum$Time)
+        tags$div(
+        tags$div(class="bold-container",
+                 p(""),
+                 p("Input Data: ",input$datasetpick),
+                 p("Period length: ",comma((nperiods/12)/24)," days"),
+                 p("Overbuild factor: ",comma(input$ofac),""),
+                 p("Baseload size: ",comma(input$blmult*input$baseloadsize)," MW"),
+                 p("Battery energy storage size: ",comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)" ),
+                 p("")
+        ),
         tags$div(class="standout-container",
                  annual,
                  p("Total Period Demand: ",comma(totdemand/1000)," GWh"),
-                 p("Period length: ",comma((nperiods/12)/24)," days"),
-                 p("Overbuild factor: ",comma(input$ofac),""),
-                 #     p("Electrification expansion factor: ",comma(input$dfac),""),
                  p("Shortfall over period: ",comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
-                 p("Baseload size: ",comma(input$blmult*input$baseloadsize)," MW"),
                  p("Curtailment: ",comma(curt/1000)," GWh (",comma(100*curt/dmand),"percent)"),
                  p("Max MW shortage: ",comma(shortMW)," dispatchable MW"),
-                 p("Battery energy storage size: ",comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)" ),
                  p("Battery energy supplied: ",comma(bsup/1000)," GWh"),
                  p("Max battery power: ",comma(bmax)," MW"),
                  p("Max wind power(5 min): ",comma(maxwind)," MW (Min ",comma(minwind),"MW",comma(minwind/maxwind*100),"%)"),
@@ -445,7 +457,7 @@ server <- function(input, output) {
                  p("(Battery shortfalls ... the multiple of configured batterysizes to supply the shortfall)"),
                  p("")
         )
-      })
+        )
     })
     output$shortfall <- renderPlot({
       dfsum<-gendfsum()
