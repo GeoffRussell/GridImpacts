@@ -9,6 +9,7 @@ library(tidyverse)
 library(markdown)
 library(plotly)
 library(RcppRoll)
+library(gt)
 
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 markdownFile<-function(filename) {
@@ -344,7 +345,9 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                 tabPanel("Dashboard statistics",
                                          fluidRow(
                                            column(width=12,
-                                                  uiOutput("calcresult")
+                                                  gt_output("calcparms"),
+                                                  gt_output("calctable"),
+                                                  uiOutput("calcresult2")
                                            )
                                          )
                                 ),
@@ -378,7 +381,37 @@ server <- function(input, output) {
       bstatus
     })
 
-    output$calcresult <- renderUI({
+    output$calctable <- render_gt({
+        dfsum<-gendfsum()
+        maxwind<-max(dfsum$wind)
+        minwind<-min(dfsum$wind)
+        dfsum$windhr<-roll_sum(dfsum$wind/12,n=12,fill=0)
+        dfsum$wind8hr<-roll_sum(dfsum$wind/12,n=12*8,fill=0)
+        minwindhr<-min(dfsum$windhr[dfsum$windhr>0])
+        maxwindhr<-max(dfsum$windhr)
+        minwind8hr<-min(dfsum$wind8hr[dfsum$wind8hr>0])
+        maxwind8hr<-max(dfsum$wind8hr)
+        df<-data_frame(
+          ` `=c("Max energy in period (MWh)","Min energy over period (MWh)","% min of max"),
+          `5 Minutes`=c(comma(maxwind),comma(minwind),comma(minwind/maxwind*100)),
+          `1 Hour`=c(comma(maxwindhr),comma(minwindhr),comma(minwindhr/maxwindhr*100)),
+          `8 Hours`=c(comma(maxwind8hr),comma(minwind8hr),comma(minwind8hr/maxwind8hr*100))
+        )
+        df |> gt() |> tab_header(title="High and Low wind energy output levels") |> tab_options(table.width=pct(100))
+    })
+    output$calcparms <- render_gt({
+        dfsum<-gendfsum()
+        nperiods<-length(dfsum$Time)
+        
+        df<-data_frame(
+          `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size"),
+          `Value`=c(input$datasetpick,paste0(comma((nperiods/12)/24)," days"),comma(input$ofac),paste0(comma(input$blmult*input$baseloadsize)," MW"),
+          paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)")
+          )
+        )
+        df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100))
+    })
+    output$calcresult2 <- renderUI({
         dfsum<-gendfsum()
         totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
         sh<-dfsum %>% summarise(max(cumShortMWh))
@@ -423,19 +456,8 @@ server <- function(input, output) {
             onbattmult<-paste0(onbattmult," ",t,":",comma(-d/(input$bmult*input$bsize)),"x ")
           }
         }
-        
-        
         nperiods<-length(dfsum$Time)
         tags$div(
-        tags$div(class="bold-container",
-                 p(""),
-                 p("Input Data: ",input$datasetpick),
-                 p("Period length: ",comma((nperiods/12)/24)," days"),
-                 p("Overbuild factor: ",comma(input$ofac),""),
-                 p("Baseload size: ",comma(input$blmult*input$baseloadsize)," MW"),
-                 p("Battery energy storage size: ",comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)" ),
-                 p("")
-        ),
         tags$div(class="standout-container",
                  annual,
                  p("Total Period Demand: ",comma(totdemand/1000)," GWh"),
@@ -444,9 +466,6 @@ server <- function(input, output) {
                  p("Max MW shortage: ",comma(shortMW)," dispatchable MW"),
                  p("Battery energy supplied: ",comma(bsup/1000)," GWh"),
                  p("Max battery power: ",comma(bmax)," MW"),
-                 p("Max wind power(5 min): ",comma(maxwind)," MW (Min ",comma(minwind),"MW",comma(minwind/maxwind*100),"%)"),
-                 p("Max wind energy(60 min): ",comma(maxwindhr)," MWh (Min ",comma(minwindhr),"MWh",comma(minwindhr/maxwindhr*100),"%)"),
-                 p("Max wind energy(8 hrs): ",comma(maxwind8hr)," MWh (Min ",comma(minwind8hr),"MWh",comma(minwind8hr/maxwind8hr*100),"%)"),
                  p("Battery capacity factor: ",comma(100*bsup/((bmax/12)*nperiods)),"%"),
                  p("Interconnector export size: ",comma(input$icsize)," MWh"),
                  {if (length(r$diff)==1) {
