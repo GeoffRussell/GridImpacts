@@ -19,8 +19,8 @@ markdownFile<-function(filename) {
   markdown(t)
 }
 options(scipen=999)
-tbgcolor="grey30"
-tfgcolor="white"
+tbgcolor="grey95"
+tfgcolor="grey10"
 
 #-----------------------------------------------------
 # Datasets
@@ -298,7 +298,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
 # UI
 #-----------------------------------------------------------------
 ui <- function(request) {
-    fluidPage(theme = shinytheme("slate"),
+    fluidPage(theme = shinytheme("yeti"),
                 tags$head(
                   tags$style(
                     ".standout-container {margin: 20px 0; padding: 20px; font-weight: bold; background-color: Teal; 
@@ -560,7 +560,7 @@ server <- function(ui,input, output) {
       write_csv(dfn,"tmp-dfn.csv")
       str(dfn)
       p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="blue")+
-        geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=0))+
+        geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=-0.1))+
         labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage")
       p +theme_bw()
     })
