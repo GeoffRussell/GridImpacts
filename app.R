@@ -294,7 +294,8 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
 #-----------------------------------------------------------------
 # UI
 #-----------------------------------------------------------------
-ui <- fluidPage(theme = shinytheme("cerulean"),
+ui <- function(request) {
+    fluidPage(theme = shinytheme("cerulean"),
                 tags$head(
                   tags$style(
                     ".standout-container {margin: 20px 0; padding: 20px; font-weight: bold; background-color: Teal; 
@@ -311,6 +312,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                 titlePanel("Grid impacts"),
                 verticalLayout(
                   mainPanel(
+                    bookmarkButton("Save settings as URL for sharing "),
                     tabsetPanel(type="tabs",
                                 tabPanel("Dashboard",
                                          fluidRow(
@@ -367,13 +369,13 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                     )
                   )
                 )
-)
-
+      )
+}
 
 
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(ui,input, output) {
     mtheme<-theme(plot.margin=unit(c(5,0,0,0),"mm"))
     ptheme<-theme(plot.title=element_text(color="#008080",size=15,face="bold",family="Helvetica"),
                 axis.text=element_text(face="bold",size=12))+mtheme
@@ -639,4 +641,5 @@ server <- function(input, output) {
 }
 
 # Run the application 
+enableBookmarking("url")
 shinyApp(ui = ui, server = server)
