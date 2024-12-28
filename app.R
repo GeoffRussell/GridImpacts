@@ -336,7 +336,7 @@ ui <- function(request) {
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
                                                   checkboxInput("showBatteryStatus",label="Show batteryStatus (%)",value=FALSE),
-                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0)
+#                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0)
                                                   #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
                                            ),
                                            column(width=6,
@@ -345,7 +345,7 @@ ui <- function(request) {
                                                   sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=FALSE),
                                                   checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
-                                                  checkboxInput("showInterconnector",label="Show interconnector flow (GWh)",value=FALSE),
+#                                                  checkboxInput("showInterconnector",label="Show interconnector flow (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE)
                                            )
                                          ),
@@ -396,7 +396,8 @@ server <- function(ui,input, output) {
     runjs('$("#mainPanel").css("width", "1200px");')
     gendfsum<-reactive({
       print(input$datasetpick)
-      bstatus<-calc(input$bsize*input$bmult,input$ofac,input$icsize,input$datasetpick,input$blmult*input$baseloadsize)
+      #bstatus<-calc(input$bsize*input$bmult,input$ofac,input$icsize,input$datasetpick,input$blmult*input$baseloadsize)
+      bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize)
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
@@ -482,62 +483,7 @@ server <- function(ui,input, output) {
                                                                            table.font.color=tfgcolor,
                                                                            column_labels.hidden=T,heading.align="left")
     })
-    output$calcresult2 <- renderUI({
-        dfsum<-gendfsum()
-        totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
-        sh<-dfsum %>% summarise(max(cumShortMWh))
-        curt<-dfsum %>% summarise(max(cumThrowOutMWh))
-        bsup<-dfsum %>% summarise(sum(batterySupplied))
-        bmax<-dfsum %>% summarise(max(batterySupplied*12))
-        dmand<-dfsum %>% summarise(sum(dblrenew/12))
-        shortMW<-dfsum %>% summarise(max(maxShortMW))
-        
-        hrs<-8
-        dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
-        #write_csv(dfsum,"tmp-dfsum.csv")
-        dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
-        dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
-        r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
-        rnights<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% filter(hour(Time)*60+minute(Time)==9*60) 
-        #write_csv(rnights,"tmp-rnights.csv")
-        maxwind<-max(dfsum$wind)
-        minwind<-min(dfsum$wind)
-        
-        dfsum$windhr<-roll_sum(dfsum$wind/12,n=12,fill=0)
-        dfsum$wind8hr<-roll_sum(dfsum$wind/12,n=12*8,fill=0)
-        minwindhr<-min(dfsum$windhr[dfsum$windhr>0])
-        maxwindhr<-max(dfsum$windhr)
-        minwind8hr<-min(dfsum$wind8hr[dfsum$wind8hr>0])
-        maxwind8hr<-max(dfsum$wind8hr)
-        print(paste0("MinWindHr ",minwindhr))
-        print(paste0("MaxWindHr ",maxwindhr))
-        print(paste0("MinWind8Hr ",minwind8hr))
-        print(paste0("MaxWind8Hr ",maxwind8hr))
-        write_csv(dfsum,"xxx1.csv")
-        
-        #      p("NSW - annual avg power 8.5GW (2023/4)"),
-        #      p("QLD - annual avg power 7.1GW (2023/4)"),
-        onshortages<-""
-        onbattmult<-""
-        for(i in 1:nrow(rnights)) {
-          d<-rnights$diff[i]
-          t<-day(rnights$Time[i])
-          if (d<0) {
-            onshortages<-paste0(onshortages," ",t,":",comma(-d)," MWh ")
-            onbattmult<-paste0(onbattmult," ",t,":",comma(-d/(input$bmult*input$bsize)),"x ")
-          }
-        }
-        nperiods<-length(dfsum$Time)
-        tags$div(
-        tags$div(class="standout-container",
-                 annual,
-                 p("Interconnector export size: ",comma(input$icsize)," MWh"),
-                 p("Battery shortfallss: ",onbattmult),
-                 p("(Battery shortfalls ... the multiple of configured batterysizes to supply the shortfall)"),
-                 p("")
-        )
-        )
-    })
+    #output$calcresult2 <- renderUI({ DELETED
     output$onshortages <- renderPlot({
       dfsum<-gendfsum()
       
@@ -601,10 +547,10 @@ server <- function(ui,input, output) {
         lab=c(lab,"Curtailment")
         val=c(val,"dotted")
       }
-      if (input$showInterconnector) {
-        lab=c(lab,"Interconnector Export")
-        val=c(val,"twodash")
-      }
+#      if (input$showInterconnector) {
+#        lab=c(lab,"Interconnector Export")
+#        val=c(val,"twodash")
+#      }
       if (input$baseloadsize>0) {
         lab=c(lab,"Baseload (MW)")
         val=c(val,"longdash")
@@ -634,9 +580,9 @@ server <- function(ui,input, output) {
         {if (input$showCurtailed)
           geom_line(aes(x=Time,y=cumThrowOutMWh*coef/1000,linetype="dotted"),data=dfsum)
         }+
-        {if (input$showInterconnector)
-          geom_line(aes(x=Time,y=cumIcExpMWh*coef/1000,linetype="twodash"),data=dfsum)
-        }+
+#        {if (input$showInterconnector)
+#          geom_line(aes(x=Time,y=cumIcExpMWh*coef/1000,linetype="twodash"),data=dfsum)
+#        }+
         {if (input$showBatteryStatus)  
           geom_line(aes(x=Time,y=(batteryStatus/(input$bsize*input$bmult))*bfac),color="red",data=dfsum)
         }+

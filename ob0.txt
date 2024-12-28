@@ -3,16 +3,15 @@ LABEL(ob0)
 
 ## The starting point: a week of South Australian electricity data
 
-The "Datasets" selection tool lets you examing various sets of data saved over the past several years
-using the [openNEM](https://explore.openelectricity.org.au/energy/sa1/?range=7d&interval=5m&view=discrete-time&group=Detailed) website. OpenNEM uses data from AEMO, the Australian electricity grid manager, but displays it in 
+OpenNEM uses data from AEMO, the Australian electricity grid manager, but displays it in 
 a friendly, easy to understand format.
 
-Now here's an image showing the makeup of a week's worth of electricity in SA during a mild spring
+Here's an OpenNEM image showing the makeup of a week's worth of electricity in SA during a mild spring
 week at the end of November 2023. The current (2025) version of openNEM looks a little different, but the changes
 are minimal.
 
-The horizontal axis is time and you can see the nights are marked
-by a grey vertical band. The vertical axis is power in megawatts. You can see that the wind farms
+The horizontal axis is date and time with the nights being marked
+with a grey vertical band. The vertical axis is power in megawatts. You can see that the wind farms
 (green band) produce a considerable portion of the total demand. 
 
 This was a week of mild temperatures; nobody needed heating or cooling. You can see that the
