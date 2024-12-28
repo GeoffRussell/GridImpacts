@@ -385,9 +385,9 @@ ui <- function(request) {
                                 tabPanel("About",
                                          markdownFile("about.txt")
                                 )
-                    )
+                    ),width=12
                   )
-                )
+            )
       )
 }
 
