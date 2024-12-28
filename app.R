@@ -315,7 +315,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("Grid Impacts: Storage, overbuild and baseload"),
+                titlePanel("GridImpacts: Storage, overbuild and baseload"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -338,7 +338,7 @@ ui <- function(request) {
                                                   ), 
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
-                                                  checkboxInput("showBatteryStatus",label="Show batteryStatus (%)",value=FALSE),
+                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
 #                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0)
                                                   #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
                                            ),
@@ -376,7 +376,7 @@ ui <- function(request) {
                                 tabPanel("Quick Start",
                                          markdownFile("ob2.txt")
                                 ),
-                                tabPanel("Help",
+                                tabPanel("Details",
                                          markdownFile("ob0.txt"),
                                          fluidRow(align="center",imageOutput("weekpng",height=400)),
                                          markdownFile("ob1a.txt"),
