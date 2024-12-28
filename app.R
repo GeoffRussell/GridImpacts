@@ -613,7 +613,7 @@ server <- function(ui,input, output) {
           name="Megawatts",
           sec.axis = sec_axis(~./coef, name="Cumulative shortfall/curtailment in GWh")
         )+theme(legend.direction="vertical",legend.box="vertical")
-      p+theme_bw()
+      p+theme_bw()+theme(legend.position="bottom",legend.box="vertical")
     })
 }
 
