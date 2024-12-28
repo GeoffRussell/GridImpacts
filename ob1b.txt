@@ -49,6 +49,19 @@ In summary, the model I've built is more to give people a feel for the problems.
 take the physical locations and capabilities into account of every piece of equipment. My little model shows what you **can't** do; you can't solve the problems posed by this still night of the 24th November with anything less than
 5,463 MWh of storage, but it doesn't show how much more you will need than this to cover real world complexity.
 
+## What about intercconnectors?
+
+South Australia currently has 870 MW of interconnectors to Victoria (a large one and a small one). 
+They keep the lights on because Victoria, currently, still runs plenty of coal. In the future?  There is a third
+interconnector being built (Project Energy Connect). It will deliver another 800 MW of capacity. As long
+as Victoria is running coal, these interconnectors will keep the lights on in SA. Losing one interconnector is
+considered a *credible* risk by AEMO. Losing both big ones simultaneously would be unlikely; but another Black Summer of bushfires could well make the unlikely distinctly possible. 
+
+Late in 2024, SA Energy Minister Tom Koutsantonis revealed plans to add some diesels to SA's reserve capacity. That move shows clearly that the Minister is doing what Minister's should do; put plans in place for the worst
+case scenario. 
+
+This grid model is similar. It's looking at dealing with long periods of energy shortfalls which will occur regardless of the amount of overbuild. As eastern Australia removes coal, the value of all interconnectors during still nights will be reduced. 
+
 
 ## Concluding remarks
 

@@ -1,7 +1,9 @@
 LABEL(ob0)
 
+The following text is a more detailed description of GridImpacts. 
 
-## The starting point: a week of South Australian electricity data
+
+#### The starting point: a week of South Australian electricity data
 
 OpenNEM uses data from AEMO, the Australian electricity grid manager, but displays it in 
 a friendly, easy to understand format.

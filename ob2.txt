@@ -1,53 +1,84 @@
 LABEL(ob2)
 
-# What do all the tools do?
+### What do all the tools do?
 
-## Datasets
+### SelectInput: Datasets
 
 You can select different sets of data corresponding to various time periods. Most are for South Australia, but
 there are a couple of Victorian sets and one from the entire NEM.
 
-## Battery Size in MWh and magic batteries
+### Slider: Battery Size in MWh
 
-The is the total energy storage capacity available. 
+The is the total energy storage capacity available. In South Australia at the end of 2024, there was 618 MWh of battery storage, most of it in 2 big batteries: 150 MW/194MWh and 250MW/250MWh.
 
-The underlying model assumes that of the batteries are **magic**. By which I mean they can store
+The GridImpacts model assumes that battery storage is **magic**. By which I mean it can store
 any excess energy regardless of the power and location of that energy. In the real world, the transmission
-capacity between the excess energy and the batteries with spare capacity may be in use. In which case that
-excess energy will simply be lost; but in my simple model with magic batteries, nothing is ever wasted if
-there is available battery space. 
+lines between that excess energy and the batteries may not be available; they may be being fully used. 
+In which case that excess energy will simply be lost; but in my simple model 
+with magic batteries, nothing is ever wasted if there is available battery space. 
 
-Similarly, in the real world every battery has a maximum power rating. It can't deliver power at a level
+### Slider: Battery multiplier
+
+For the NEM dataset, you'd want to model much bigger batteries than for South Australia. This slider just
+multiplies the battery size. 
+
+### Checkbox: Show battery charge level (%) 
+
+Click this and yet another line appears on the chart showing the battery state over time. 
+
+### Slider: Overbuild factor 
+
+This slider allows you to see what happens if you just double the existing amount of wind and solar capacity. 
+
+As this factor rises, you will see more energy flow into the battery. Eventually the battery will be full and more energy will be curtailed.
+
+### Slider: Baseload size (MW) 
+
+### Slider: Baseload multiplier 
+
+This is similar to the Battery multiplier.
+
+### Checkbox: Show shortfall (GWh)
+
+### Checkbox: Show dumped energy (GWh)
+
+### Checkbox: Show wind vs demand 
+
+This click box just strips back the chart to basics and focuses on the wind output and demand. In
+South Australia, it is quite common during summer heatwaves for wind output to be at it's lowest when
+demand is at its highest. For example select the *"March heatwave, 2024"* dataset and you'll see 
+the peaks in demand correspond with drops in wind.
+
+The click box doesn't "play well" with other
+selections ... it won't show any Overbuild renewable generation if you have some selected.
+
+## Tab: Stats 
+
+The *Stats* tab gives summary statistics for the impacts of changes you make to the sliders.
+
+Have a look at the night of the 24th of November. It was a *very* still night. Assuming you
+have dialled in a doubling of wind+solar, the summary board shows
+an accumulated shortfall over the night of 5,463, even with twice the renewables that we have now. Can
+we fix that shortfall with storage?
+
+
+## Appendix: Magic batteries and real ones
+
+In the real world every battery has a maximum power rating. It can't deliver power at a level
 greater than this, even if it has plenty of energy. Suppose, for example, you have a real 
-100 MW/200 MWh battery. The two numbers tell you the maximum power rating and the maximum amount of energy that
-can be stored. This is a 2-hour battery. It can provide a maximum of 100 MW of power for 2 hours; resulting in 
+100 MW/200 MWh battery. All batteries are characterised by two numbers.
+They tell you respectively the maximum power rating and the maximum amount of energy that
+can be stored. Some people would call it a 100MW/2 hour battery; which means the same thing. 
+It can provide a maximum of 100 MW of power for 2 hours; resulting in 
 200 MWh of energy being delivered.  If you need 175 MW of power, this battery won't deliver it; you'll need a second battery for the remaining 75 MW. 
 
-Magic batteries don't exist. They are a simplification. Using the tool, you'll be able to
-watch as the shortfall reduces as you increase the size of the magic battery. Suppose you
-hit 10 GWh and the shortfall for the period vanishes.  Does that prove that 10 GWh will be
-enough in the real world with a real transmission system and real batteries? No, it does not. But
-what if 10 GWh *didn't* drive the shortfalls to zero. Then you'd know that 10 GWh of real batteries
-wouldn't work; no matter where you put them or how you configured them.  
+Magic batteries don't exist. They are a simplification. Using GridImpacts, you'll be able to
+watch as the shortfall reduces as you increase the size of the magic battery. Suppose you dial in 
+10,000 MWh of batteries and the shortfall vanishes.  
+Does that prove that this storage will be
+enough in the real world with a real transmission system and real batteries? No, it does not. 
+On the other hand, if 10,000 MWh *didn't* drive the shortfalls to zero, you'd know 
+that 10,000 MWh of real batteries wouldn't work; no matter where you put them or how you configured them.  
 
-Note the assymetry. 
-
-## What about intercconnectors?
-
-South Australia currently has 870 MW of interconnectors to Victoria (a large one and a small one). 
-They keep the lights on because Victoria, currently, still runs plenty of coal. In the future?  There is a third
-interconnector being built (Project Energy Connect). It will deliver another 800 MW of capacity. As long
-as Victoria is running coal, these interconnectors will keep the lights on in SA. Losing one interconnector is
-considered a *credible* risk by AEMO. Losing both big ones simultaneously would be unlikely; but another Black Summer of bushfires could well make the unlikely distinctly possible. 
-
-Late in 2024, SA Energy Minister Tom Koutsantonis revealed plans to add some diesels to SA's reserve capacity. That move shows clearly that the Minister is doing what Minister's should do; put plans in place for the worst
-case scenario. 
-
-This grid model is similar. It's looking at dealing with long periods of energy shortfalls which will occur regardless of the amount of overbuild. As eastern Australia removes coal, the value of all interconnectors during still nights will be reduced. 
-
-
-
-
-
-
+Note the assymetry. You can prove something won't work with GridImpacts, but not that it will. 
 

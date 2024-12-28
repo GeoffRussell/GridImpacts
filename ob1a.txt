@@ -1,7 +1,7 @@
 LABEL(ob1a)
 
 
-### Understanding the graph
+#### Understanding the graph
 
 This graph was produced using the [OpenNEM website](https://opennem.org.au/energy/sa1/?range=7d&interval=5m&view=discrete-time) on the 29th of November 2023. 
 OpenNEM uses data from AEMO, the Australian electricity grid manager, but displays it in 
@@ -23,7 +23,7 @@ I mentioned, this is less than half of peak demand during a heat wave.
 
 The colours represent the different sources of electricity as explained in the legend below the graph; green is wind power. 
 
-### Explainer: Power and energy
+#### Explainer: Power and energy
 
 Skip this section if you understand the difference between power and energy. 
 
@@ -84,7 +84,7 @@ the equivalent of a single 360 MW gas plant running 24x7; a considerable reducti
 The total output of our wind and solar plants over the past 12 months has been 10,141 GWh (OpenNEM again); that's
 about as much as a single full sized nuclear plant.  
 
-### Getting a feel for the dynamics 
+#### Getting a feel for the dynamics 
 
 The "Dashboard Statistics" tab of this website is a (very) simplified model of an electricity grid. 
 
@@ -121,17 +121,6 @@ you will have seen a cyan curve appear on the graph.
 for batteries and overbuild. Australia's current electricity market is quite bizarre and only makes sense to
 people who've spent a lifetime in the industry. If you specify, for example, 600MW of baseload, then it
 will always be running with renewables handling peaks either directly or via any specified battery storage.
-
-### The sliders
-
-The sliders are mostly self explanatory. You change the size of the battery with the "Battery Size in MWh" slider and the overbuild factor with the Overbuild factor slider.  
-
-The two "multiplier" sliders handle the
-problem of having a wide range of possible inputs. Consider the "Battery size in MWh" slider. When dealing with
-South Australia, we'd be hard put to imagine too many gigawatts of batteries being installed. Having 20,000 MWh (20 GWh) is plenty. But when handling data covering the whole of NEM, we'd like to specify a much bigger battery. But having a slider with 200,000 MWh would be hard to manipulate and the software doesn't allow variable bounds for the slider. 
-
-Having the multiplier sliders allows you to quickly specify larger batteries and baseload specifications for 
-the larger states. 
 
 ### Summary statistics 
 
