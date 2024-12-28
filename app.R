@@ -133,7 +133,7 @@ labswind<-c(
   "Wind"
 )
 colsshort<-c(
-  "renew"="purple",
+  "renew"="grey40",
   "dblrenew"="cyan",
   "demand"="brown"
 )
@@ -147,7 +147,7 @@ colslabels<-c( "Overbuild", "Demand", "Wind+Solar","Wind")
 colslevels<-c(
   "dblrenew"="cyan",
   "demand"="brown",
-  "renew"="purple",
+  "renew"="grey40",
   "wind"="forestgreen"
 )
 
@@ -559,9 +559,9 @@ server <- function(ui,input, output) {
       }
       write_csv(dfn,"tmp-dfn.csv")
       str(dfn)
-      p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="blue")+
+      p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="grey")+
         geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=-0.1))+
-        labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage")
+        labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage\nNegative values are when supply exceeds demand")
       p +theme_bw()
     })
     output$shortfall <- renderPlot({
@@ -626,7 +626,7 @@ server <- function(ui,input, output) {
       
       print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
       p<-dfcs %>% ggplot() + 
-        geom_line(aes(x=Time,y=MW,color=Level),linewidth=1) +  
+        geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
         ptheme +
         {if (input$showShort)
           geom_line(aes(x=Time,y=cumShortMWh*coef/1000,linetype="dashed"),data=dfsum)

@@ -1,0 +1,38 @@
+LABEL(ob2)
+
+# What do all the tools do?
+
+## Datasets
+
+You can select different sets of data corresponding to various time periods. Most are for South Australia, but
+there are a couple of Victorian sets and one from the entire NEM.
+
+## Battery Size in MWh and magic batteries
+
+The is the total energy storage capacity available. 
+
+The underlying model assumes that of the batteries are **magic**. By which I mean they can store
+any excess energy regardless of the power and location of that energy. In the real world, the transmission
+capacity between the excess energy and the batteries with spare capacity may be in use. In which case that
+excess energy will simply be lost; but in my simple model with magic batteries, nothing is ever wasted if
+there is available battery space. 
+
+Similarly, in the real world every battery has a maximum power rating. It can't deliver power at a level
+greater than this, even if it has plenty of energy. Suppose, for example, you have a real 
+100 MW/200 MWh battery. The two numbers tell you the maximum power rating and the maximum amount of energy that
+can be stored. This is a 2-hour battery. It can provide a maximum of 100 MW of power for 2 hours; resulting in 
+200 MWh of energy being delivered.  If you need 175 MW of power, this battery won't deliver it; you'll need a second battery for the remaining 75 MW. 
+
+Magic batteries don't exist. They are a simplification. Using the tool, you'll be able to
+watch as the shortfall reduces as you increase the size of the magic battery. Suppose you
+hit 10 GWh and the shortfall for the period vanishes.  Does that prove that 10 GWh will be
+enough in the real world with a real transmission system and real batteries? No, it does not. But
+what if 10 GWh *didn't* drive the shortfalls to zero. Then you'd know that 10 GWh of real batteries
+wouldn't work; no matter where you put them or how you configured them.  
+
+Note the assymetry. 
+
+
+
+
+
