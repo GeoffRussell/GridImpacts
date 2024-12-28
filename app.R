@@ -4,6 +4,7 @@
 
 library(shiny)
 library(shinyjs)
+library(shinyBS)
 library(shinyWidgets)
 library(shinythemes)
 library(tidyverse)
@@ -11,6 +12,8 @@ library(markdown)
 library(plotly)
 library(RcppRoll)
 library(gt)
+library(bslib)
+library(bsicons)
 
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 markdownFile<-function(filename) {
@@ -340,13 +343,15 @@ ui <- function(request) {
                                                   #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
                                            ),
                                            column(width=6,
-                                                  sliderInput("ofac",label="Overbuild factor for wind+solar", min=1,max=3,step=0.1,value=1),
+                                                  sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
                                                   sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
                                                   sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=FALSE),
                                                   checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
 #                                                  checkboxInput("showInterconnector",label="Show interconnector flow (GWh)",value=FALSE),
-                                                  checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE)
+                                                  checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
+                                                  bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
+                                                  bsTooltip("datasetpick","Select an alternative set of real world data",placement="top",trigger="hover")
                                            )
                                          ),
                                          fluidRow(
