@@ -346,7 +346,7 @@ ui <- function(request) {
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
                                                   sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
                                                   sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
-                                                  checkboxInput("showShort",label="Show shortfall (GWh)",value=FALSE),
+                                                  checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
                                                   checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
 #                                                  checkboxInput("showInterconnector",label="Show interconnector flow (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),

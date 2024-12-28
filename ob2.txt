@@ -34,13 +34,23 @@ As this factor rises, you will see more energy flow into the battery. Eventually
 
 ### Slider: Baseload size (MW) 
 
+You can test the impact of having a baseload energy source on the amount of overbuild and batteries you
+need to eliminate shortfall. Having a baseload source also reduces the need for interconnections and
+peaking gas plants.
+
 ### Slider: Baseload multiplier 
 
 This is similar to the Battery multiplier.
 
 ### Checkbox: Show shortfall (GWh)
 
+You can turn the shortfall display off if you wish to unclutter the chart and focus on some region.
+
 ### Checkbox: Show dumped energy (GWh)
+
+Dumping electricity is typically called *curtailment*. When you have low overbuild, this will usually
+be because of either grid congestions or economics; meaning you choose to dump energy rather than take 
+a low price for your electricity.
 
 ### Checkbox: Show wind vs demand 
 
