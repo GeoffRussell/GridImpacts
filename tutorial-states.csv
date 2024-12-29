@@ -1,0 +1,4 @@
+statename,datasetpick,bsize,bmult,ofac,baseloadsize,blmult,showShort,showCurtailed
+Default,"WE 30 November 2023",500,1,1,0,1,TRUE,FALSE
+JuneDouble,"June 2024 (1st week only)",500,1,2,0,1,TRUE,FALSE
+JuneDouble10k,"June 2024 (1st week only)",10000,1,2,0,1,TRUE,FALSE
