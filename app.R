@@ -338,8 +338,7 @@ ui <- function(request) {
                                                   ), 
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
-                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
-#                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0)
+                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE)
                                                   #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
                                            ),
                                            column(width=6,
@@ -348,7 +347,6 @@ ui <- function(request) {
                                                   sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
                                                   checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
-#                                                  checkboxInput("showInterconnector",label="Show interconnector flow (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
                                                   bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
                                                   bsTooltip("datasetpick","Select an alternative set of real world data",placement="top",trigger="hover")
@@ -401,7 +399,6 @@ server <- function(ui,input, output) {
     runjs('$("#mainPanel").css("width", "1200px");')
     gendfsum<-reactive({
       print(input$datasetpick)
-      #bstatus<-calc(input$bsize*input$bmult,input$ofac,input$icsize,input$datasetpick,input$blmult*input$baseloadsize)
       bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize)
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
@@ -552,10 +549,6 @@ server <- function(ui,input, output) {
         lab=c(lab,"Curtailment")
         val=c(val,"dotted")
       }
-#      if (input$showInterconnector) {
-#        lab=c(lab,"Interconnector Export")
-#        val=c(val,"twodash")
-#      }
       if (input$baseloadsize>0) {
         lab=c(lab,"Baseload (MW)")
         val=c(val,"longdash")
@@ -585,9 +578,6 @@ server <- function(ui,input, output) {
         {if (input$showCurtailed)
           geom_line(aes(x=Time,y=cumThrowOutMWh*coef/1000,linetype="dotted"),data=dfsum)
         }+
-#        {if (input$showInterconnector)
-#          geom_line(aes(x=Time,y=cumIcExpMWh*coef/1000,linetype="twodash"),data=dfsum)
-#        }+
         {if (input$showBatteryStatus)  
           geom_line(aes(x=Time,y=(batteryStatus/(input$bsize*input$bmult))*bfac),color="red",data=dfsum)
         }+
