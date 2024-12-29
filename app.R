@@ -356,7 +356,7 @@ ui <- function(request) {
                                          ),
                                          fluidRow(
                                            column(width=12,
-                                                  plotOutput("shortfall")
+                                                  plotOutput("shortfall",height=600)
                                            )
                                          )
                                 ),
@@ -610,7 +610,7 @@ server <- function(ui,input, output) {
         scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
         scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
         scale_y_continuous(
-          name="Megawatts",
+          name="Megawatts (supply/demand/overbuild)",
           sec.axis = sec_axis(~./coef, name="Cumulative shortfall/curtailment in GWh")
         )+theme(legend.direction="vertical",legend.box="vertical")
       p+theme_bw()+theme(legend.position="bottom",legend.box="vertical")
