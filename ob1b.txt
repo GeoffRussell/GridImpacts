@@ -6,18 +6,20 @@ LABEL(ob1b)
 The "Datasets" button lists other sets of data; including the heatwaves in South Australia at the
 end of 2019, leading into the *Black Summer* of bush fires. 
 
-Other datasets of interest are:
+Some datasets of interest are:
 
 ### June 2024 
 
-The lack of wind during June 2024 was extreme and provides an excellent example of the difficulties of using
-batteries to handle such shortfalls.
+The lack of wind during June 2024 was extreme and provides an excellent
+example of the difficulties of using batteries to handle such shortfalls.
 
-It's also useful to illustrate how useful baseload power is in reducing both the overbuild and the battery
-requirements to handle large wind droughts. 
+It's also useful to illustrate how useful baseload power is in reducing
+both the overbuild and the battery requirements to handle large wind
+droughts.
 
-There are two datasets for this period, one shows just the first week of June. The dataset covering the whole
-of June is large and sometimes the additional detail obscures what is going on.
+There are two datasets for this period, one shows just the first week
+of June. The dataset covering the whole of June is large and sometimes
+the additional detail obscures what is going on.
 
 ### January 2024
 
@@ -29,6 +31,13 @@ data for Victoria; where we got the electricity to keep the lights on during the
 If you select the VIC dataset, you'll see that the night of the 24th was an extraordinarily low wind night, similar
 to that in South Australia. In a high penetration wind+solar system, they'd have been hard put to 
 be sending us anything. 
+
+### Black Summer Heatwave 
+
+There were multiple heatwaves in Australia during the Black Summer of 2019-20. I've added
+a dataset for South Australia, for the second heatwave in December. It illustrates the 
+particular problems of still hot days leading into sweltering evenings. Windpower can be
+almost totally absent when it is most required.
 
 
 ### What can you demonstrate with this kind of model? 
@@ -51,49 +60,67 @@ take the physical locations and capabilities into account of every piece of equi
 
 ## What about intercconnectors?
 
-South Australia currently has 870 MW of interconnectors to Victoria (a large one and a small one). 
-They keep the lights on because Victoria, currently, still runs plenty of coal. In the future?  There is a third
+Why don't I model interconnectors? The interconnectors keeping the lights on in South Australia
+are both long and fires in Australia are common. During Black Summer (2019-20), [four 330kv transmission lines](https://www.aer.gov.au/system/files/A.2_%202019-20%20%20Bushfire%20Damage%20to%20TransGrid%20Network_%20FINAL_PUBLIC_Redacted.pdf) tripped (stopped transmitting power) within a few minutes of each other and electrically separated NSW and Victoria. So while the extraordinary efforts made by engineers to prevent transmission lines starting fires are largely successful, planning
+for failure is always wise.
+
+South Australia currently has 870 MW of interconnectors to Victoria (a large AC one and a 
+small DC one). They keep the lights on because Victoria, currently, 
+still runs plenty of coal. In the future?  There is a third
 interconnector being built (Project Energy Connect). It will deliver another 800 MW of capacity. As long
 as Victoria is running coal, these interconnectors will keep the lights on in SA. Losing one interconnector is
-considered a *credible* risk by AEMO. Losing both big ones simultaneously would be unlikely; but another Black Summer of bushfires could well make the unlikely distinctly possible. 
+considered a *credible* risk by AEMO. Losing both big ones simultaneously would be unlikely; but another Black Summer of bushfires could well make the unlikely possible. 
 
-Late in 2024, SA Energy Minister Tom Koutsantonis revealed plans to add some diesels to SA's reserve capacity. That move shows clearly that the Minister is doing what Minister's should do; put plans in place for the worst
-case scenario. 
+Late in 2024, SA Energy Minister Tom Koutsantonis revealed plans to add some diesels to SA's reserve capacity. That move shows clearly that the Minister is doing what Minister's should do; 
+plan for the worst. Koutsantonis is looking at dealing with long periods of energy shortfalls which will occur regardless of the amount of overbuild. As eastern Australia removes coal, the value of all interconnectors during still nights will be reduced. 
 
-This grid model is similar. It's looking at dealing with long periods of energy shortfalls which will occur regardless of the amount of overbuild. As eastern Australia removes coal, the value of all interconnectors during still nights will be reduced. 
-
+GridImpacts allows you to see how hard it is to plan for the worst without
+baseload power. You need extraordinary amounts of both storage and generations; and you
+can throw away large amounts of what you generate.
 
 ## Concluding remarks
 
-A large electricity grid is an astonishing creation requiring a considerable set of skills from a large set
-of teams. Australia has stumbled into its decision to try and build a 100% renewable system as a direct consequence
-of not looking seriously at the alternative; namely, leaving the grid substantially alone and just swap out the
-thermal coal plants of thermal nuclear plants.
+A large electricity grid is an astonishing creation requiring a
+considerable set of skills from a large set of teams. Australia has
+stumbled into its decision to try and build a 100% renewable system as a
+direct consequence of not looking seriously at the alternative; namely,
+leaving the grid substantially alone and just swap out the thermal coal
+plants of thermal nuclear plants.
 
-The decision to not consider nuclear seriously is partly the fault of the nuclear industry itself. It never 
-really came to grips with the improved understanding of cancer that was emerging in the 1980s and is still
-developing. How bizarre is it that you can walk into supermarkets and bottleshops anywhere in Australia and
-buy potent carcinogenic foodstuffs, but we ban nuclear power? 
+The decision to not consider nuclear seriously is partly the fault of the
+nuclear industry itself. It never really came to grips with the improved
+understanding of cancer that was emerging in the 1980s and is still
+developing. How bizarre is it that you can walk into supermarkets and
+bottleshops anywhere in Australia and buy potent carcinogenic foodstuffs,
+but we ban nuclear power?
 
-Anybody over 50 in Australia can get a [free bowel cancer screening kit](https://www.health.gov.au/our-work/national-bowel-cancer-screening-program). You get a little booklet which tells you:
+Anybody over 50 in Australia can get a [free bowel cancer screening
+kit](https://www.health.gov.au/our-work/national-bowel-cancer-screening-program).
+You get a little booklet which tells you:
 
 > *"People who smoke, are overweight, have a diet low in fresh vegetables and fruit, and high in red and processed meats, are at increased risk of **several cancers**" [emphasis added]
 
-That's about as good an example as you get of bolting the stable door a couple of decades after the horses have left.
+That's about as good an example as you get of bolting the stable door
+a couple of decades after the horses have left.
 
-We have a myriad of organisations in Australia whose hands and lips are arc-welded to 
-both traditional anti-nuclear policies and traditional cancer causing foods; giving us a position near the
-top of the per person global cancer tables. 
+We have a myriad of organisations in Australia whose hands and lips are
+arc-welded to both traditional anti-nuclear policies and traditional
+cancer causing foods; giving us a position near the top of the per person
+global cancer tables.
 
-The idea that a plane could fly into a nuclear plant and unleash a disaster
-is a given for these groups and, I suspect, for the industry itself. 
+The idea that a plane could fly into a nuclear plant and unleash a
+disaster is a given for these groups and, I suspect, for the industry
+itself.
 
-But could any such accident rival the cancer impacts of alcohol, red and processed 
-meat and tobacco? Impossible. The death toll from flying a plane into an office block would be
-considerably higher, so why don't we demand they be safe in the face of such attacks? Because that would stop the
-office block building in its tracks. The biggest impact of a successful attack on a nuclear plant has always
-been the direct impacts on the staff and the withdrawal of the service; the electricity. 
-Nevertheless the nuclear regulatory ratchet, tightened by fierce campaigning
-based on information now known to be false, remains just as tight as it has ever been. Leading to an industry
-bogged down by regulators and its own failure to push-back and unroll the barriers. 
+But could any such accident rival the cancer impacts of alcohol,
+red and processed meat and tobacco? Impossible. The death toll from
+flying a plane into an office block would be considerably higher, so
+why don't we demand they be safe in the face of such attacks? Because
+that would stop the office block building in its tracks. The biggest
+impact of a successful attack on a nuclear plant has always been the
+direct impacts on the staff and the withdrawal of the service; the
+electricity.  Nevertheless the nuclear regulatory ratchet, tightened by
+fierce campaigning based on information now known to be false, remains
+just as tight as it has ever been. Leading to an industry bogged down
+by regulators and its own failure to push-back and unroll the barriers.
 
