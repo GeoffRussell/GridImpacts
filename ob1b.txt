@@ -61,18 +61,28 @@ take the physical locations and capabilities into account of every piece of equi
 ## What about intercconnectors?
 
 Why don't I model interconnectors? The interconnectors keeping the lights on in South Australia
-are both long and fires in Australia are common. During Black Summer (2019-20), [four 330kv transmission lines](https://www.aer.gov.au/system/files/A.2_%202019-20%20%20Bushfire%20Damage%20to%20TransGrid%20Network_%20FINAL_PUBLIC_Redacted.pdf) tripped (stopped transmitting power) within a few minutes of each other and electrically separated NSW and Victoria. So while the extraordinary efforts made by engineers to prevent transmission lines starting fires are largely successful, planning
-for failure is always wise.
+are both long and fires in Australia are common. 
 
-South Australia currently has 870 MW of interconnectors to Victoria (a large AC one and a 
-small DC one). They keep the lights on because Victoria, currently, 
-still runs plenty of coal. In the future?  There is a third
-interconnector being built (Project Energy Connect). It will deliver another 800 MW of capacity. As long
-as Victoria is running coal, these interconnectors will keep the lights on in SA. Losing one interconnector is
-considered a *credible* risk by AEMO. Losing both big ones simultaneously would be unlikely; but another Black Summer of bushfires could well make the unlikely possible. 
+During Black Summer (2019-20), on 4th January, [four 330kv transmission lines](https://www.aer.gov.au/system/files/A.2_%202019-20%20%20Bushfire%20Damage%20to%20TransGrid%20Network_%20FINAL_PUBLIC_Redacted.pdf) tripped (stopped transmitting power) within a few minutes of each other and electrically separated NSW and Victoria. On 7th of January another 3 transmission line
+trips separated NSW and Queensland. 
+
+So while engineers have been incredibly successful at preventing transmission (as opposed
+to the smaller distribution) lines *starting* 
+fires, fires can definitely trip tranmission lines. So planning for separations is always wise.
+
+South Australia currently has 870 MW of interconnectors to Victoria
+(a large AC one and a small DC one). They keep the lights on because
+Victoria, currently, still runs plenty of coal. In the future?  There is
+a third interconnector being built (Project Energy Connect). It will
+deliver another 800 MW of capacity. As long as Victoria is running
+coal, these interconnectors will keep the lights on in SA. Losing one
+interconnector is considered a *credible* risk by AEMO. Losing both
+big ones simultaneously would be unlikely; but another Black Summer of
+bushfires could well make the unlikely possible.
 
 Late in 2024, SA Energy Minister Tom Koutsantonis revealed plans to add some diesels to SA's reserve capacity. That move shows clearly that the Minister is doing what Minister's should do; 
-plan for the worst. Koutsantonis is looking at dealing with long periods of energy shortfalls which will occur regardless of the amount of overbuild. As eastern Australia removes coal, the value of all interconnectors during still nights will be reduced. 
+plan for the worst credible failure. Koutsantonis is looking at dealing with long periods of energy shortfalls which will occur regardless of the amount of overbuild. As eastern Australia removes coal, the value of all interconnectors during still nights will be reduced; even if they
+don't fail. 
 
 GridImpacts allows you to see how hard it is to plan for the worst without
 baseload power. You need extraordinary amounts of both storage and generations; and you
