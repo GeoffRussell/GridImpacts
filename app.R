@@ -315,7 +315,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild and baseload"),
+                titlePanel("GridImpacts: Storage, overbuild and baseload  (v0.90)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
