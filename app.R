@@ -54,6 +54,7 @@ dataSetTitles<-c(
   "Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 28 December 2019",
   "March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 12 March 2024"
 )
+print(names(dataSets))
 #-----------------------------------------------------
 # End Datasets
 # Check Datasets
@@ -122,6 +123,25 @@ findBands<-function(df) {
     darkdf<-bind_rows(darkdf,tmp)
   }
   darkdf
+}
+#-----------------------------------------------------------------
+# Function to set state 
+#-----------------------------------------------------------------
+dfStates<-read_csv("tutorial-states.csv")
+setState<-function(statename,session) {
+  print(statename)
+  i=1
+  for (s in dfStates$statename) {
+    if (statename==s) {
+      print("Found")
+      updateSliderInput(session,"bsize",value=dfStates$bsize[i])
+      updateSliderInput(session,"datasetpick",value=dfStates$datasetpick[i])
+      updateSliderInput(session,"ofac",value=dfStates$ofac[i])
+      return
+    }
+    i=i+1
+  }
+  return
 }
 
 #-----------------------------------------------------------------
@@ -340,7 +360,10 @@ ui <- function(request) {
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
                                                   checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
 #                                                  sliderInput("icsize",label="Interconnector size (MW)", min=0,max=2000,step=100,value=0)
-                                                  #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
+                                                  selectInput("state",choices=dfStates$statename,
+                                                              multiple=FALSE,
+                                                              label = 'Example configurations'
+                                                  ) 
                                            ),
                                            column(width=6,
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
@@ -394,20 +417,24 @@ ui <- function(request) {
 
 
 # Define server logic required to draw a histogram
-server <- function(ui,input, output) {
+server <- function(ui,input, output,session) {
+    v<-reactiveValues(u=NULL)
     mtheme<-theme(plot.margin=unit(c(5,0,0,0),"mm"))
     ptheme<-theme(plot.title=element_text(color="#008080",size=15,face="bold",family="Helvetica"),
                 axis.text=element_text(face="bold",size=12))+mtheme
     runjs('$("#mainPanel").css("width", "1200px");')
+    observeEvent(input$state,{
+        v$state=input$state
+        setState(v$state,session)
+    })
     gendfsum<-reactive({
-      print(input$datasetpick)
+      print(paste0("DATASET: ",input$datasetpick))
       #bstatus<-calc(input$bsize*input$bmult,input$ofac,input$icsize,input$datasetpick,input$blmult*input$baseloadsize)
       bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize)
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
     })
-
     output$weekpng<-renderImage(list(src="WeekEnding30-11-2023.png",height=400),deleteFile=FALSE)
     
     output$calctableexp <- renderUI({
