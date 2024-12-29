@@ -106,7 +106,7 @@ dfout<-readDataSet("WE 30 November 2023")
 #---------------------------------------------------------------------------------------
 # Find night time bands 
 #---------------------------------------------------------------------------------------
-findBands<-function(df) {
+findNightTimeBands<-function(df) {
   sunbreak=0.05*max(df$`Solar (Rooftop) - MW`)  # 5 percent of max is start of day
   dark<-(df$`Solar (Rooftop) - MW`<sunbreak)    # which periods are dark
   ldld<-which(dark[-1] != dark[-length(dark)])  # where are the changes of state
@@ -363,6 +363,7 @@ ui <- function(request) {
                                          fluidRow(
                                            column(width=12,
                                                   gt_output("calcparms"),
+                                                  uiOutput("calcparmsexp"),
                                                   gt_output("calcoutput"),
                                                   plotOutput("onshortages"),
                                                   gt_output("calctable"),
@@ -413,6 +414,11 @@ server <- function(ui,input, output) {
           p("The 8 hour column gives the highest amount of wind energy in any 8 hour period as will as the lowest in any 8 hour period. Similarly for the other periods, 5 minutes and 1 hour.")
         )
     })
+    output$calcparmsexp <- renderUI({
+        tags$div(
+          p("The battery storage size (hrs) calculation uses the average hourly demand during this period, not the annual average hourly demand or the summer peak average hourly demand")
+        )
+    })
     
     output$calcoutput <- render_gt({
         dfsum<-gendfsum()
@@ -422,8 +428,10 @@ server <- function(ui,input, output) {
         curt<-dfsum %>% summarise(max(cumThrowOutMWh))
         bsup<-dfsum %>% summarise(sum(batterySupplied))
         bmax<-dfsum %>% summarise(max(batterySupplied*12))
-        dmand<-dfsum %>% summarise(sum(dblrenew/12))
+        totremwh<-dfsum %>% summarise(sum(dblrenew/12))
         shortMW<-dfsum %>% summarise(max(maxShortMW))
+        periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
+        print(paste0("Avg power: ",avgpower," GW, Period Avg: ",periodAvgDemand," GW"))
         
         hrs<-8
         dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
@@ -436,7 +444,7 @@ server <- function(ui,input, output) {
                         "Battery capacity factor","Max 8hr shortage end time"),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
                     paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
-                    paste0(comma(curt/1000)," GWh (",comma(100*curt/dmand),"%)"),
+                    paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"%)"),
                     paste0(comma(shortMW)," dispatchable MW"),
                     paste0(comma(bsup/1000)," GWh"),
                     paste0(comma(bmax)," MW"),
@@ -474,11 +482,12 @@ server <- function(ui,input, output) {
     output$calcparms <- render_gt({
         dfsum<-gendfsum()
         nperiods<-length(dfsum$Time)
+        periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
         
         df<-data_frame(
           `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size"),
           `Value`=c(input$datasetpick,paste0(comma((nperiods/12)/24)," days"),comma(input$ofac),paste0(comma(input$blmult*input$baseloadsize)," MW"),
-          paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(avgpower*1e9))," hrs)")
+          paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(periodAvgDemand*1e9))," hrs)")
           )
         )
         df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100),
@@ -486,7 +495,6 @@ server <- function(ui,input, output) {
                                                                            table.font.color=tfgcolor,
                                                                            column_labels.hidden=T,heading.align="left")
     })
-    #output$calcresult2 <- renderUI({ DELETED
     output$onshortages <- renderPlot({
       dfsum<-gendfsum()
       
@@ -554,10 +562,15 @@ server <- function(ui,input, output) {
         lab=c(lab,"Baseload (MW)")
         val=c(val,"longdash")
       }
-      nightbands<-findBands(dfsum)
-      for(i in 1:nrow(nightbands)) {
-        cat(paste0())
-      }
+      nightbands<-findNightTimeBands(dfsum)
+#      for(i in 1:nrow(nightbands)) {
+#        cat(paste0())
+#      }
+      #---------------------------------------------
+      # coef is used to scale the RHS y-axis and depends on the size of the 
+      # amount of shortfall or curtailment
+      # bfac scales the battery status chart 
+      #---------------------------------------------
       bfac=input$bsize*input$bmult
       if (bfac==0) bfac=1000
       bfac=maxsupply
