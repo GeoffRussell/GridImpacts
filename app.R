@@ -331,7 +331,7 @@ ui <- function(request) {
                                         ),
                                          fluidRow(
                                            column(width=6,
-                                                  chooseSliderSkin("Big"),
+                                                  chooseSliderSkin("Shiny"),
                                                   selectInput("datasetpick",choices=sort(names(dataSets)),
                                                               selected=c("WE 30 November 2023"),
                                                               multiple=FALSE,
