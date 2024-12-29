@@ -510,7 +510,7 @@ server <- function(ui,input, output) {
       str(dfn)
       p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="grey")+
         geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=-0.1))+
-        labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\nIncluding storage\nNegative values are when supply exceeds demand")
+        labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\n(Excluding any storage)\nNegative values are when supply exceeds demand")
       p +theme_bw()
     })
     output$shortfall <- renderPlot({
