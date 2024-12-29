@@ -567,8 +567,8 @@ server <- function(ui,input, output) {
       else {
         coef=maxsupply/mm*1000
       }
-      
       print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
+      
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
         ptheme +
@@ -588,7 +588,6 @@ server <- function(ui,input, output) {
           annotate('text',x=dfcs$Time[nperiods/2],y=bfac,label="Battery 100% full",color="red",vjust=-0.2,hjust=0)
         }+
         {if (input$showShort)  
-          #geom_col(aes(x=Time,y=shortFall*12,alpha=0.2),color="orange",data=dfsum,show.legend=FALSE)
           geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.4,data=dfsum)
         }+
         {if (input$showShort)  
@@ -596,14 +595,13 @@ server <- function(ui,input, output) {
         }+
         geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
         labs(color="Supply/Demand (MW)",title=thetitle)+
-        #scale_color_manual(labels=thelabs,values=thecols)+
         scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
         scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
         scale_y_continuous(
           name="Megawatts (supply/demand/overbuild)",
           sec.axis = sec_axis(~./coef, name="Cumulative shortfall/curtailment in GWh")
         )+theme(legend.direction="vertical",legend.box="vertical")
-      p+theme_bw()+theme(legend.position="bottom",legend.box="vertical")
+        p+theme_bw()+theme(legend.position="bottom",legend.box="vertical")
     })
 }
 
