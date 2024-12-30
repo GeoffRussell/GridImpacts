@@ -283,9 +283,28 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
           dfsum$batterySupplied[i]=needE
         }
         else { # we have some in battery, but not enough
-          dfsum$shortFall[i]=needE-batteryStatus
-          dfsum$batterySupplied[i]=batteryStatus
-          batteryStatus=0
+            stillNeedE=needE-batteryStatus
+            stillNeedMW=stillNeedE*12
+            dfsum$batterySupplied[i]=batteryStatus
+            batteryStatus=0
+            if (gasmw) {
+              print(paste0("i:",i," gasmw: ",gasmw," stillNeedMW: ",stillNeedMW," stillNeedE: ",stillNeedE,"\n"))
+              if (gasmw<stillNeedMW) {
+                dfsum$gasEout[i]<-gasmw/12
+                needMW=stillNeedMW-gasmw
+                dfsum$shortFall[i]=needMW/12
+                print(paste0("    short : ",needMW/12))
+              }
+              else {
+                dfsum$gasEout[i]<-stillNeedE
+                needMW=0
+              }
+              print(paste0("    gas out : ",dfsum$gasEout[i]))
+              dfsum$gasMWout[i]<-dfsum$gasEout[i]*12
+            }
+            else {
+              dfsum$shortFall[i]=needE-batteryStatus
+            }
         }
       }
       else { # battery empty, have we any gas?
@@ -643,7 +662,7 @@ server <- function(ui,input, output) {
           geom_col(aes(x=Time,y=gasMWout,fill="blue"),alpha=0.2,data=dfsum)
         }+
         {if (input$showShort)  
-          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.5,data=dfsum)
+          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),data=dfsum)
         }+
         {if (input$showShort)  
           scale_fill_manual(name="Shortfall",labels=ll,values=vv)
