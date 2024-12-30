@@ -25,6 +25,8 @@ options(scipen=999)
 tbgcolor="grey95"
 tfgcolor="grey10"
 
+gasintensity<-0.437    # kg-co2/kwh (EIA)
+
 #-----------------------------------------------------
 # Datasets
 #-----------------------------------------------------
@@ -356,7 +358,7 @@ ui <- function(request) {
                                                   ), 
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
-                                                  sliderInput("gaspeak",label="Gas Peakers (GW)", min=0,max=5,step=0.25,value=0.25),
+                                                  sliderInput("gaspeak",label="Gas Peakers (GW)", min=0,max=5,step=0.25,value=0),
                                                   sliderInput("gasmult",label="Peaker multiplier",min=1,max=5,step=1,value=1)
                                            ),
                                            column(width=6,
@@ -448,6 +450,7 @@ server <- function(ui,input, output) {
         bmax<-dfsum %>% summarise(max(batterySupplied*12))
         totremwh<-dfsum %>% summarise(sum(dblrenew/12))
         shortMW<-dfsum %>% summarise(max(maxShortMW))
+        gasMWh<-dfsum %>% summarise(sum(gasEout))
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
         print(paste0("Avg power: ",avgpower," GW, Period Avg: ",periodAvgDemand," GW"))
         
@@ -459,7 +462,7 @@ server <- function(ui,input, output) {
         df<-data_frame(
           `Parameter`=c("Demand","Shortfall","Curtailment","Maximum power shortage (MW)","Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
-                        "Battery capacity factor","Max 8hr shortage end time"),
+                        "Battery capacity factor","Max 8hr shortage end time","Gas output","Carbon dioxide"),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
                     paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
                     paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"%)"),
@@ -467,7 +470,9 @@ server <- function(ui,input, output) {
                     paste0(comma(bsup/1000)," GWh"),
                     paste0(comma(bmax)," MW"),
                     paste0(comma(100*bsup/((bmax/12)*nperiods)),"%"),
-                    paste0(r$Time,": ",comma(-r$diff),"MWh")
+                    paste0(r$Time,": ",comma(-r$diff),"MWh"),
+                    paste0(comma(gasMWh/1000)," GWh"),
+                    paste0(comma(gasMWh*gasintensity)," tonnes")
                     )
         )
         df |> gt() |> tab_header(title="Output results") |> tab_options(table.width=pct(100),
@@ -503,9 +508,10 @@ server <- function(ui,input, output) {
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
         
         df<-data_frame(
-          `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size"),
+          `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size","Gas Peaking"),
           `Value`=c(input$datasetpick,paste0(comma((nperiods/12)/24)," days"),comma(input$ofac),paste0(comma(input$blmult*input$baseloadsize)," MW"),
-          paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(periodAvgDemand*1e9))," hrs)")
+          paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(periodAvgDemand*1e9))," hrs)"),
+                 paste0(comma(input$gaspeak*input$gasmult)," GW")
           )
         )
         df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100),
