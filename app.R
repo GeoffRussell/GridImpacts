@@ -288,7 +288,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
             dfsum$batterySupplied[i]=batteryStatus
             batteryStatus=0
             if (gasmw) {
-              print(paste0("i:",i," gasmw: ",gasmw," stillNeedMW: ",stillNeedMW," stillNeedE: ",stillNeedE,"\n"))
+              #print(paste0("i:",i," gasmw: ",gasmw," stillNeedMW: ",stillNeedMW," stillNeedE: ",stillNeedE,"\n"))
               if (gasmw<stillNeedMW) {
                 dfsum$gasEout[i]<-gasmw/12
                 needMW=stillNeedMW-gasmw
@@ -299,7 +299,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
                 dfsum$gasEout[i]<-stillNeedE
                 needMW=0
               }
-              print(paste0("    gas out : ",dfsum$gasEout[i]))
+              #print(paste0("    gas out : ",dfsum$gasEout[i]))
               dfsum$gasMWout[i]<-dfsum$gasEout[i]*12
             }
             else {
