@@ -181,8 +181,9 @@ cols<-c(
 # Calc: the main function which calculates the flow of electricity
 # between the generators and batteries
 #-----------------------------------------------------------------
-calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
+calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
   print(dataSets[dspick])
+  gasmw<-ifelse(gaspeak>0,gaspeak*1000,0)
   dfout<-readDataSet(dspick)
   batteryMaxCapacity<-bmax
   dfsum <- dfout %>% mutate(
@@ -219,6 +220,8 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
   dfsum$batterySupplied=rep(0,nperiods) # MWh
   dfsum$throwOutMWh=rep(0,nperiods)
   dfsum$addedToBattery=rep(0,nperiods)
+  dfsum$gasEout=rep(0,nperiods)
+  dfsum$gasMWout=rep(0,nperiods)
   lastdfsum<<-dfsum
   totalBattuse<<-sum(lastdfsum$battuse/12)
   maxNeed<-0
@@ -267,9 +270,10 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
     }
     if (spareE<0) { # demand exceeds generation, get from battery if any available
       needE=-spareE
-      if (needE>maxNeed) {
+      if (needE>maxNeed) { # save this for stats
         maxNeed<-needE
       }
+      # Have we got anything in the battery?
       if (batteryStatus>0) {
         if (batteryStatus>=needE) { # extract from battery
           batteryStatus=batteryStatus-needE
@@ -282,7 +286,20 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0) {
           batteryStatus=0
         }
       }
-      else { # battery empty
+      else { # battery empty, have we any gas?
+        needMW=needE*12 
+        if (gasmw) {
+          if (gasmw<needMW) {
+            dfsum$gasEout[i]<-gasmw/12
+            needMW=needMW-gasmw
+          }
+          else {
+            dfsum$gasEout[i]<-needE
+            needMW=0
+          }
+          needE=needMW/12
+          dfsum$gasMWout[i]<-dfsum$gasEout[i]*12
+        }
         dfsum$shortFall[i]=needE
       }
     }
@@ -339,8 +356,8 @@ ui <- function(request) {
                                                   ), 
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
-                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE)
-                                                  #            sliderInput("dfac",label="Electricity expansion factor", min=1,max=2,step=0.2,value=1),
+                                                  sliderInput("gaspeak",label="Gas Peakers (GW)", min=0,max=5,step=0.25,value=0.25),
+                                                  sliderInput("gasmult",label="Peaker multiplier",min=1,max=5,step=1,value=1)
                                            ),
                                            column(width=6,
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
@@ -349,6 +366,7 @@ ui <- function(request) {
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
                                                   checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
+                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
                                                   bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
                                                   bsTooltip("datasetpick","Select an alternative set of real world data",placement="top",trigger="hover")
                                            )
@@ -401,7 +419,7 @@ server <- function(ui,input, output) {
     runjs('$("#mainPanel").css("width", "1200px");')
     gendfsum<-reactive({
       print(input$datasetpick)
-      bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize)
+      bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize,input$gaspeak*input$gasmult)
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
@@ -562,6 +580,17 @@ server <- function(ui,input, output) {
         lab=c(lab,"Baseload (MW)")
         val=c(val,"longdash")
       }
+      ll<-c()
+      vv<-c()
+      if (input$gaspeak>0) {
+        ll=c(ll,"gas peaker")
+        vv=c(vv,"blue")
+      }
+      if (input$showShort) {
+        ll=c(ll,"shortfall")
+        vv=c(vv,"orange")
+      }
+      
       nightbands<-findNightTimeBands(dfsum)
 #      for(i in 1:nrow(nightbands)) {
 #        cat(paste0())
@@ -583,6 +612,8 @@ server <- function(ui,input, output) {
       }
       print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
       
+      
+      print(ll)
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
         ptheme +
@@ -601,11 +632,14 @@ server <- function(ui,input, output) {
         {if (input$showBatteryStatus)  
           annotate('text',x=dfcs$Time[nperiods/2],y=bfac,label="Battery 100% full",color="red",vjust=-0.2,hjust=0)
         }+
-        {if (input$showShort)  
-          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.4,data=dfsum)
+        {if (input$gaspeak>0 & input$showShort)  
+          geom_col(aes(x=Time,y=gasMWout,fill="blue"),alpha=0.2,data=dfsum)
         }+
         {if (input$showShort)  
-          scale_fill_manual(name="Shortfall",labels=c("Shortfall"),values=c("orange"))
+          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.5,data=dfsum)
+        }+
+        {if (input$showShort)  
+          scale_fill_manual(name="Shortfall",labels=ll,values=vv)
         }+
         geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
         labs(color="Supply/Demand (MW)",title=thetitle)+
