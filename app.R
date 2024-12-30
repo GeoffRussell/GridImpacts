@@ -369,7 +369,7 @@ ui <- function(request) {
                                           column(width=12,div(style="height: 50px;", " " ))
                                         ),
                                          fluidRow(
-                                           column(width=6,
+                                           column(width=4,
                                                   chooseSliderSkin("Shiny"),
                                                   selectInput("datasetpick",choices=sort(names(dataSets)),
                                                               selected=c("WE 30 November 2023"),
@@ -381,7 +381,7 @@ ui <- function(request) {
                                                   sliderInput("gaspeak",label="Gas Peakers (GW)", min=0,max=5,step=0.25,value=0),
                                                   sliderInput("gasmult",label="Peaker multiplier",min=1,max=5,step=1,value=1)
                                            ),
-                                           column(width=6,
+                                           column(width=4,
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
                                                   sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
                                                   sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
