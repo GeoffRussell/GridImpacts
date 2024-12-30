@@ -671,7 +671,7 @@ server <- function(ui,input, output) {
           scale_fill_manual(name="Shortfall",labels=ll,values=vv)
         }+
         geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
-        annotate('text',x=lasttime,y=maxsupply,label=paste0("Shortfall: ",comma(maxshort/1000)," GWh"),hjust=1)+
+        annotate('text',x=lasttime,y=maxsupply,label=paste0("Shortfall: ",comma(maxshort/1000)," GWh"),hjust=1,size=5)+
         labs(color="Supply/Demand (MW)",title=thetitle)+
         scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
         scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
