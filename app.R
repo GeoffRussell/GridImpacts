@@ -287,6 +287,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
             stillNeedMW=stillNeedE*12
             dfsum$batterySupplied[i]=batteryStatus
             batteryStatus=0
+            # battery is empty but have we any gas?
             if (gasmw) {
               #print(paste0("i:",i," gasmw: ",gasmw," stillNeedMW: ",stillNeedMW," stillNeedE: ",stillNeedE,"\n"))
               if (gasmw<stillNeedMW) {
@@ -303,7 +304,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
               dfsum$gasMWout[i]<-dfsum$gasEout[i]*12
             }
             else {
-              dfsum$shortFall[i]=needE-batteryStatus
+              dfsum$shortFall[i]=stillNeedE
             }
         }
       }
@@ -637,9 +638,11 @@ server <- function(ui,input, output) {
         coef=maxsupply/mm*1000
       }
       print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
+      print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
       
       
       print(ll)
+      lasttime<-dfsum$Time[nperiods-1]
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
         ptheme +
@@ -662,12 +665,13 @@ server <- function(ui,input, output) {
           geom_col(aes(x=Time,y=gasMWout,fill="blue"),alpha=0.2,data=dfsum)
         }+
         {if (input$showShort)  
-          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),data=dfsum)
+          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.7,data=dfsum)
         }+
         {if (input$showShort)  
           scale_fill_manual(name="Shortfall",labels=ll,values=vv)
         }+
         geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
+        annotate('text',x=lasttime,y=maxsupply,label=paste0("Shortfall: ",comma(maxshort/1000)," GWh"),hjust=1)+
         labs(color="Supply/Demand (MW)",title=thetitle)+
         scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
         scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
