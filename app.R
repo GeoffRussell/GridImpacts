@@ -28,6 +28,13 @@ tfgcolor="grey10"
 gasintensity<-0.437    # kg-co2/kwh (EIA)
 
 #-----------------------------------------------------
+# Read 2024 ISP data 
+#-----------------------------------------------------
+ispfile="2024-ISP-Step-Change-Core.xlsx"
+cdp3<-read_excel(ispfile,sheet="Capacity",skip=2) |> filter(CDP=="CDP3")
+
+
+#-----------------------------------------------------
 # Datasets
 #-----------------------------------------------------
 dataSets<-c(
