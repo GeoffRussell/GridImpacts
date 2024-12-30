@@ -1,0 +1,20 @@
+---
+title: "ISPreader"
+author: "GeoffRussell"
+date: "2024-12-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+```
+
+```{r cars}
+#fle="2024-ISP-Step-Change-Core.xlsx"
+#isp<-excel_sheets(fle)
+#cdp3<-read_excel(fle,sheet="Capacity",skip=2) |> filter(CDP=="CDP3")
+#write_csv(cdp3,"isp2024-cdp3.csv")
+cdp3<-read_csv("isp2024-cdp3.csv")
+```
