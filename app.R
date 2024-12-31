@@ -32,6 +32,8 @@ gasintensity<-0.437    # kg-co2/kwh (EIA)
 #-----------------------------------------------------
 ispfile="isp2024-cdp3.csv"
 cdp3<-read_csv(ispfile)
+cdpsa<-cdp3 |> filter(Region=="SA")
+
 
 
 #-----------------------------------------------------
