@@ -29,6 +29,7 @@ gasintensity<-0.437    # kg-co2/kwh (EIA)
 
 #-----------------------------------------------------
 # Read 2024 ISP data 
+# the ISP has plenty of different development paths 
 #-----------------------------------------------------
 ispfile="isp2024-cdp3.csv"
 cdp3<-read_csv(ispfile)
