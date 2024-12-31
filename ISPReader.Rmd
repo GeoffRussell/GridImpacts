@@ -17,4 +17,76 @@ library(readxl)
 #cdp3<-read_excel(fle,sheet="Capacity",skip=2) |> filter(CDP=="CDP3")
 #write_csv(cdp3,"isp2024-cdp3.csv")
 cdp3<-read_csv("isp2024-cdp3.csv")
+cdp3sa<-cdp3 |> filter(Region=="SA") |> pivot_longer(`2023-24`:`2051-52`,names_to='Year',values_to='MW') 
+cdp3vic<-cdp3 |> filter(Region=="VIC") |> pivot_longer(`2023-24`:`2051-52`,names_to='Year',values_to='MW') 
+unique(cdp3$Technology)
+
+makeType<-function(.data) {
+  .data |> mutate(Type=case_when(
+    Technology=='Coordinated CER storage' ~ 'Storage',
+    Technology=='Distributed PV' ~ 'Solar',
+    Technology=='Black coal' ~ 'Fossil',
+    Technology=='Brown coal' ~ 'Fossil',
+    Technology=='Utility storage' ~ 'Storage',
+    Technology=='DSP' ~ 'DSP',
+    Technology=='Flexible gas' ~ 'Fossil',
+    Technology=='Flexible gas with CCS' ~ 'Fossil',
+    Technology=='Hydro' ~ 'Storage',
+    Technology=='Mid-merit gas' ~ 'Fossil',
+    Technology=='Offshore wind' ~ 'Wind',
+    Technology=='Other renewable fuels' ~ 'Fossil',
+    Technology=='Passive CER storage' ~ 'Storage',
+    Technology=='Utility solar' ~ 'Solar',
+    Technology=='Utility storage' ~ 'Storage',
+    Technology=='Wind' ~ 'Wind'))
+}
+getState<-function(Reg) {
+    df<-cdp3 |> filter(Region==Reg) |> pivot_longer(`2023-24`:`2051-52`,names_to='Year',values_to='MW')  
+    df |> mutate(Type=case_when(
+    Technology=='Coordinated CER storage' ~ 'Storage',
+    Technology=='Distributed PV' ~ 'Solar',
+    Technology=='Utility storage' ~ 'Storage',
+    Technology=='DSP' ~ 'DSP',
+    Technology=='Flexible gas' ~ 'Fossil',
+    Technology=='Flexible gas with CCS' ~ 'Fossil',
+    Technology=='Hydro' ~ 'Storage',
+    Technology=='Mid-merit gas' ~ 'Fossil',
+    Technology=='Offshore wind' ~ 'Wind',
+    Technology=='Other renewable fuels' ~ 'Fossil',
+    Technology=='Passive CER storage' ~ 'Storage',
+    Technology=='Utility solar' ~ 'Solar',
+    Technology=='Utility storage' ~ 'Storage',
+    Technology=='Wind' ~ 'Wind'))
+}
+cdp3sa<-getState("SA")
+cdp3vic<-getState("VIC")
+cdp3qld<-getState("QLD")
+cdp3nsw<-getState("NSW")
+
+unique(cdp3sa$Subregion)
+unique(cdp3vic$Subregion)
+unique(cdp3qld$Subregion)
+```
+```{r}
+cdp3l<-cdp3 |> makeType() |> pivot_longer(`2023-24`:`2051-52`,names_to='Year',values_to='MW')  
+byyearnem<-cdp3l   |> group_by(Region,Year) |>  summarise(
+  SolarWindRatio=sum(ifelse(Type=="Solar",MW,0))/sum(ifelse(Type=="Wind",MW,0)),
+  StorageSolarRatio=sum(ifelse(Type=="Storage",MW,0))/sum(ifelse(Type=="Solar",MW,0)),
+  StorageVRERatio=sum(ifelse(Type=="Storage",MW,0))/sum(ifelse(Type=="Solar",MW,ifelse(Type=="Wind",MW,0)))
+  )
+byyear<-cdp3sa  |> group_by(Year) |>  summarise(
+  SolarWindRatio=sum(ifelse(Type=="Solar",MW,0))/sum(ifelse(Type=="Wind",MW,0)),
+  StorageSolarRatio=sum(ifelse(Type=="Storage",MW,0))/sum(ifelse(Type=="Solar",MW,0)),
+  StorageVRERatio=sum(ifelse(Type=="Storage",MW,0))/sum(ifelse(Type=="Solar",MW,ifelse(Type=="Wind",MW,0)))
+  )
+```
+
+```{r}
+cdp3sa |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Technology),position="stack")
+cdp3sa |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Type),position="stack")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=SolarWindRatio))+labs(x="",title="Solar to Wind Ratio (NEM) ")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=StorageSolarRatio))+labs(x="",title="Storage MW to Solar MW")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=StorageVRERatio))+labs(x="",title="Storage MW to Solar+Wind MW")
+byyear |> ggplot()+geom_col(aes(x=Year,y=SolarWindRatio))
+byyear |> ggplot()+geom_col(aes(x=Year,y=StorageSolarRatio))
 ```
