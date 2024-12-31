@@ -22,9 +22,24 @@ with magic batteries, nothing is ever wasted if there is available battery space
 For the NEM dataset, you'd want to model much bigger batteries than for South Australia. This slider just
 multiplies the battery size. 
 
-### Checkbox: Show battery charge level (%) 
+### Slider: Gas Peakers (GW) 
 
-Click this and yet another line appears on the chart showing the battery state over time. 
+Gas turbines in power stations come in a few different types.  Some are expensive and highly efficient, while
+others are cheap and less efficient. The AEMO Integrated System Plan for Australia proposed replacing our
+current expensive and efficient turbines that operate quite a lot with cheap and less efficient ones that
+run less frequently. These cheap turbines are often called *gas peakers*; because it is the cheapest
+way of handling unexpected peaks in electricity consumption. You don't want expensive and efficient equipment
+standing idle in the off chance that you might need it for a few days a year. 
+
+It's like car makers putting those funny little spare wheels in your boot, rather than a 
+full sized spare wheel. They are cheapest way of handling a rare occurrence.
+
+GridImpacts lets you specify some level of gas peakers; in gigawatts. The down side of gas peakers is the
+carbon dioxide emissions; in addition to the vast gas infrastructure required to operate any 
+gas system.
+
+### Slider: Peaker multiplier 
+
 
 ### Slider: Overbuild factor 
 
@@ -61,6 +76,10 @@ the peaks in demand correspond with drops in wind.
 
 The click box doesn't "play well" with other
 selections ... it won't show any Overbuild renewable generation if you have some selected.
+
+### Checkbox: Show battery charge level (%) 
+
+Click this and yet another line appears on the chart showing the battery state over time. 
 
 ## Tab: Stats 
 
