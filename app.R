@@ -41,29 +41,29 @@ cdpsa<-cdp3 |> filter(Region=="SA")
 #-----------------------------------------------------
 dataSets<-c(
   "(VIC) WE 25 January 2024"="openNem-VIC-25-01-24-7D.csv",
-  "WE 16 May 2024"="openNem-SA-16-05-24-7D.csv",
+  "(SA) WE 16 May 2024"="openNem-SA-16-05-24-7D.csv",
   "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
   "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
-  "June 2024"="openNEMMerge-June-2024.csv",
-  "June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
-  "WE 30 January 2024"="openNem-SA-30-01-24-7D.csv",
-  "WE 30 November 2023"="opennem-30-11-2023sa5.csv",
-  "First heatwave, Dec 2019"="openNem-SA-21-12-19-7D.csv",
-  "Second heatwave, Dec 2019"="openNem-SA-28-12-19-7D.csv",
-  "March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
+  "(SA) June 2024"="openNEMMerge-June-2024.csv",
+  "(SA) June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
+  "(SA) WE 30 January 2024"="openNem-SA-30-01-24-7D.csv",
+  "(SA) WE 30 November 2023"="opennem-30-11-2023sa5.csv",
+  "(SA) First heatwave, Dec 2019"="openNem-SA-21-12-19-7D.csv",
+  "(SA) Second heatwave, Dec 2019"="openNem-SA-28-12-19-7D.csv",
+  "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles<-c(
   "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(Victoria) Week ending 25 Jan 2024",
-  "WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 16 May 2024",
+  "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 16 May 2024",
   "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nVIC Week ending 16 May 2024",
   "(NEM) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nNEM Week ending 16 May 2024",
-  "June 2024"="Electricity renewable/demand/shortfall\nJune 2024",
-  "June 2024 (1st week only)"="Electricity renewable/demand/shortfall\n1st Week June 2024",
-  "WE 30 January 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 Jan 2024",
-  "WE 30 November 2023"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 November 2023",
-  "First heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 21 December 2019",
-  "Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 28 December 2019",
-  "March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 12 March 2024"
+  "(SA) June 2024"="Electricity renewable/demand/shortfall\nJune 2024",
+  "(SA) June 2024 (1st week only)"="Electricity renewable/demand/shortfall\n1st Week June 2024",
+  "(SA) WE 30 January 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 Jan 2024",
+  "(SA) WE 30 November 2023"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 November 2023",
+  "(SA) First heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 21 December 2019",
+  "(SA) Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 28 December 2019",
+  "(SA) March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 12 March 2024"
 )
 #-----------------------------------------------------
 # End Datasets
@@ -113,7 +113,7 @@ readDataSet<-function(n) {
     rename_with(~sub('  ',' ',.x))
   dfdata %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
 }
-dfout<-readDataSet("WE 30 November 2023")
+dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
 # Find night time bands 
 #---------------------------------------------------------------------------------------
@@ -363,7 +363,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.91)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.92)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -374,32 +374,35 @@ ui <- function(request) {
                     ),
                     tabsetPanel(type="tabs",id="tabsetpanel",
                                 tabPanel("Dashboard",
+                                        chooseSliderSkin("Shiny"),
                                         fluidRow(
-                                          column(width=12,div(style="height: 50px;", " " ))
-                                        ),
-                                         fluidRow(
-                                           column(width=4,
-                                                  chooseSliderSkin("Shiny"),
+                                          column(width=12,
                                                   selectInput("datasetpick",choices=sort(names(dataSets)),
-                                                              selected=c("WE 30 November 2023"),
+                                                              selected=c("(SA) WE 30 November 2023"),
                                                               multiple=FALSE,
                                                               label = 'Datasets'
                                                   ), 
-                                                  sliderInput("bsize",label="Battery size in MWh", min=500,max=20000,step=500,value=500),
-                                                  sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
+                                                  bsTooltip("datasetpick","Select an alternative set of real world data",placement="top",trigger="hover")
+                                          )
+                                        ),
+                                         fluidRow(
+                                           column(width=4,
+                                                  sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
+                                                  bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
+                                                  sliderInput("bsize",label="Battery size in MWh", min=500,max=10000,step=500,value=500),
+                                                  sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1)
+                                           ),
+                                           column(width=4,
+                                                  sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
+                                                  sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
                                                   sliderInput("gaspeak",label="Gas Peakers (GW)", min=0,max=5,step=0.25,value=0),
                                                   sliderInput("gasmult",label="Peaker multiplier",min=1,max=5,step=1,value=1)
                                            ),
                                            column(width=4,
-                                                  sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
-                                                  sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
-                                                  sliderInput("blmult",label="Baseload multiplier", min=1,max=20,step=1,value=1),
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
                                                   checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
-                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
-                                                  bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
-                                                  bsTooltip("datasetpick","Select an alternative set of real world data",placement="top",trigger="hover")
+                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE)
                                            )
                                          ),
                                          fluidRow(
@@ -488,7 +491,7 @@ server <- function(ui,input, output) {
         dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
         dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
         r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
-        df<-data_frame(
+        df<-tibble(
           `Parameter`=c("Demand","Shortfall","Curtailment","Maximum power shortage (MW)","Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
                         "Battery capacity factor","Max 8hr shortage end time","Gas output","Carbon dioxide"),
@@ -520,7 +523,7 @@ server <- function(ui,input, output) {
         maxwindhr<-max(dfsum$windhr)
         minwind8hr<-min(dfsum$wind8hr[dfsum$wind8hr>0])
         maxwind8hr<-max(dfsum$wind8hr)
-        df<-data_frame(
+        df<-tibble(
           ` `=c("Max energy in period (MWh)","Min energy over period (MWh)","% min of max"),
           `5 Minutes`=c(comma(maxwind),comma(minwind),paste0(comma(minwind/maxwind*100),"%")),
           `1 Hour`=c(comma(maxwindhr),comma(minwindhr),paste0(comma(minwindhr/maxwindhr*100),"%")),
@@ -536,7 +539,7 @@ server <- function(ui,input, output) {
         nperiods<-length(dfsum$Time)
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
         
-        df<-data_frame(
+        df<-tibble(
           `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size","Gas Peaking"),
           `Value`=c(input$datasetpick,paste0(comma((nperiods/12)/24)," days"),comma(input$ofac),paste0(comma(input$blmult*input$baseloadsize)," MW"),
           paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(periodAvgDemand*1e9))," hrs)"),
@@ -568,7 +571,7 @@ server <- function(ui,input, output) {
 #          }
       }
       write_csv(dfn,"tmp-dfn.csv")
-      str(dfn)
+      #str(dfn)
       p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="grey")+
         geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=-0.1))+
         labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and supply\n(Excluding any storage)\nNegative values are when supply exceeds demand")
@@ -647,10 +650,8 @@ server <- function(ui,input, output) {
         coef=maxsupply/mm*1000
       }
       print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
-      print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
-      
-      
-      print(ll)
+      #print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
+      #print(ll)
       lasttime<-dfsum$Time[nperiods-1]
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
