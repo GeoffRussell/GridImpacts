@@ -126,10 +126,9 @@ readDataSet<-function(n) {
   dfdata<-read_csv(dataSets[n]) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
     rename_with(~sub('  ',' ',.x))
-  print(colnames(dfdata))
-  dfdata<-dfdata %>% mutate(across(everything(),replace_na,0)) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
-  #print(dfdata$demand)
-  dfdata
+  #print(colnames(dfdata))
+  # A bit risky to just replace NAs, 
+  dfdata %>% mutate(across(everything(),replace_na,0)) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
 }
 dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
