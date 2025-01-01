@@ -1,0 +1,10 @@
+# AEMO ISP
+
+Australia's energy market operator, AEMO, has an Integrated System Plan (ISP) for Australia, designed 
+to meet the carbon emissions goal of the current Government (the ALP as of January 2025).
+
+The ISP [generation and storage outlook](https://aemo.com.au/energy-systems/major-publications/integrated-system-plan-isp/2024-integrated-system-plan-isp) contains multiple scenarios and multiple *candidate development pathways* (CDPs) 
+within those scenarios. I've chosen to present the model represented by CDP3; the *least cost* CDP. 
+
+
+
