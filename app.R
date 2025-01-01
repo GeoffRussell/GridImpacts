@@ -455,6 +455,9 @@ ui <- function(request) {
                                          markdownFile("ob1a.txt"),
                                          markdownFile("ob1b.txt")
                                 ),
+                                tabPanel("ISP",
+                                         markdownFile("isp.txt")
+                                ),
                                 tabPanel("About",
                                          markdownFile("about.txt")
                                 )
