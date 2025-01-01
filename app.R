@@ -45,6 +45,7 @@ dataSets<-c(
   "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
   "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
   "(SA) June 2024"="openNEMMerge-June-2024.csv",
+  "(QLD) end of December 2024"="openNEMMerge-QLD-30-12-2024-19D.csv",
   "(SA) June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
   "(SA) WE 30 January 2024"="openNem-SA-30-01-24-7D.csv",
   "(SA) WE 30 November 2023"="opennem-30-11-2023sa5.csv",
@@ -53,6 +54,7 @@ dataSets<-c(
   "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles<-c(
+  "(QLD) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
   "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(Victoria) Week ending 25 Jan 2024",
   "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 16 May 2024",
   "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nVIC Week ending 16 May 2024",
@@ -80,6 +82,9 @@ for (i in dataSets) {
 fields<-c("Battery (Charging) - MW","Imports - MW","Distillate - MW","Gas (Steam) - MW","Gas (CCGT) - MW", "Gas (OCGT) - MW","Gas (Reciprocating) - MW","Battery (Discharging) - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
 fieldsVIC<-c("Battery (Charging) - MW","Imports - MW","Coal (Brown) - MW","Gas (OCGT) - MW",
              "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
+fieldsQLD<-c("Battery (Charging) - MW","Pumps - MW","Exports - MW","Imports - MW","Coal (Black) - MW",                          
+      "Bioenergy (Biomass) - MW","Distillate - MW","Gas (CCGT) - MW","Gas (OCGT) - MW","Gas (Waste Coal Mine) - MW","Battery (Discharging) - MW",                 
+      "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")                      
 fieldsNEM<-c("Battery (Charging) - MW","Coal (Brown) - MW","Gas (OCGT) - MW",
              "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
 
@@ -92,6 +97,9 @@ isnem<-function(f) {
 }
 isvic<-function(f) {
   str_detect(f,"VIC\\)")
+}
+isqld<-function(f) {
+  str_detect(f,"QLD\\)")
 }
 readDataSet<-function(n) {
   print(n)
@@ -108,10 +116,20 @@ readDataSet<-function(n) {
     avgpower<<-5.4
     flds<-fieldsVIC
   }
+  if (isqld(n)) {
+    annual<<-p("QLD - annual avg power ???GW (2023/4)")
+    avgpower<<-5.4
+    flds<-fieldsQLD
+    print("QLDQLD")
+  }
+  
   dfdata<-read_csv(dataSets[n]) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
     rename_with(~sub('  ',' ',.x))
-  dfdata %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
+  print(colnames(dfdata))
+  dfdata<-dfdata %>% mutate(across(everything(),replace_na,0)) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
+  #print(dfdata$demand)
+  dfdata
 }
 dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
@@ -242,6 +260,10 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
     dfsum$shortFall[i]=0
     # spareE is in MWh
     spareE=(dfsum$supply[i]-dfsum$demand[i])/12 
+    #print(paste0("i:",i," ",spareE,"\n"))
+    if (is.na(spareE)) {
+      #print(paste0("supply/demand: ",dfsum$Time[i]," ",dfsum$supply[i],"/",dfsum$demand[i],"\n"))
+    }
     if (spareE>0) {  # Electricity exceeds demand ... add spare to battery if there is any capacity
       if (batteryStatus<batteryMaxCapacity) { # battery isn't full
         spareB=batteryMaxCapacity-batteryStatus
