@@ -94,21 +94,57 @@ cdp3storMW<-getSheet("Storage Capacity","CDP3",nullfilter,"GW")
 ```
 
 ```{r}
-storTypes<-c("Coordinated CER storage","Passive CER storage","Shallow storage","Deep storage","Medium storage","Shallow storage")
-plotStorGWh<-function(df,region) {
-  p<-df |> filter(Technology %in% storTypes) |> ggplot()+geom_col(aes(x=Year,y=GWh,fill=Technology),position="stack") +labs(x="",title=paste0(region," Storage by year (ISP2024/CDP3)")) 
-  print(p)
-  dopng(paste0(region,"StorageMWhISPCDP3.png"),p,w=2500,h=1800)
+storTypes<-c("Coordinated CER storage","Borumba","Snowy 2.0","Passive CER storage","Shallow storage","Deep storage","Medium storage","Shallow storage")
+redStorTypes<-c("Coordinated CER storage","Passive CER storage","Shallow storage","Deep storage","Medium storage","Shallow storage")
+combineStorageTypes<-function(.data) {
+  .data |> mutate(WhoOwns=case_when(
+    Technology=='Coordinated CER storage' ~ 'Household',
+    Technology=='Passive CER storage' ~ 'Household',
+    Technology=='Shallow storage' ~ 'Grid',
+    Technology=='Deep storage' ~ 'Grid',
+    Technology=='Medium storage' ~ 'Grid',
+    Technology=='Borumba' ~ 'Borumba',
+    Technology=='Snowy 2.0' ~ 'Snowy2.0'
+  ))
 }
-doStateStore<-function(Reg) {
+plotStorGWh<-function(df,region,storTypes,lab,sup) {
+  p<-df |> filter(Technology %in% storTypes) |> combineStorageTypes() |> 
+    ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +
+    labs(x="",title=paste0(region," Storage by year\n",lab,"Data: AEMO/ISP2024 (CDP3)")) +
+    scale_fill_manual(breaks=c("Grid","Household","Borumba","Snowy2.0"),
+        values=c("grey90","grey2","lightblue","blue"),labels=c("Grid","Household","Borumba","Snowy2.0"))
+  print(p+theme_bw())
+  dopng(paste0(region,sup,"StorageMWhISPCDP3.png"),p,w=2500,h=1800)
+}
+doStateStore<-function(Reg,storTypes,lab,sup) {
     df<-cdp3storMWh |> filter(Region==Reg) 
-    plotStorGWh(df,Reg)
+    plotStorGWh(df,Reg,storTypes,lab,sup)
     df
 }
-cdp3saGWh<-doStateStore("SA")
-cdp3vicGWh<-doStateStore("VIC")
-cdp3nswGWh<-doStateStore("NSW")
-cdp3qldGWh<-doStateStore("QLD")
+cdp3saGWh<-doStateStore("SA",storTypes,"","")
+cdp3vicGWh<-doStateStore("VIC",storTypes,"","")
+cdp3nswGWh<-doStateStore("NSW",storTypes,"","")
+cdp3qldGWh<-doStateStore("QLD",storTypes,"","")
+plotStorGWh(cdp3storMWh,"NEM",storTypes,"","")
+
+cdp3nswGWh<-doStateStore("NSW",redStorTypes,"without Snowy2.0\n","-noph")
+cdp3qldGWh<-doStateStore("QLD",redStorTypes,"without Borumba\n","-noph")
+plotStorGWh(cdp3storMWh,"NEM",redStorTypes,"without Borumba/Snowy2.0\n","-noph")
+```
+
+```{r}
+p<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Without Borumba/Snowy2.0)\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) + scale_fill_manual(values=c("grey90","grey2"),labels=c("Grid","Household"))
+  print(p+theme_bw()+facet_grid(.~Region))
+dopng("ByStateStorageMWh-noph-ISPCDP3.png",p,w=2500,h=1800)
+
+p<-cdp3storMWh |> filter(Technology %in% storTypes) |> combineStorageTypes() |> 
+  ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +
+  labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) +
+  scale_fill_manual(breaks=c("Grid","Household","Borumba","Snowy2.0"), 
+                    values=c("grey90","grey2","lightblue","blue"),labels=c("Grid","Household","Borumba","Snowy2.0"))
+  print(p+theme_bw()+facet_grid(.~Region))
+dopng("ByStateStorageMWh-ISPCDP3.png",p,w=2500,h=1800)
+```
 ```
 
 
