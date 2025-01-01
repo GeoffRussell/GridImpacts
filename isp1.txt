@@ -3,8 +3,25 @@
 Australia's energy market operator, AEMO, has an Integrated System Plan (ISP) for Australia, designed 
 to meet the carbon emissions goal of the current Government (the ALP as of January 2025).
 
+## Storage
+
 The ISP [generation and storage outlook](https://aemo.com.au/energy-systems/major-publications/integrated-system-plan-isp/2024-integrated-system-plan-isp) contains multiple scenarios and multiple *candidate development pathways* (CDPs) 
 within those scenarios. I've chosen to present the model represented by CDP3; the *least cost* CDP. 
+
+### Two big questions?
+
+1. How much storage does the ISP require?
+2. Who will pay for it? 
+3. Who will control it? 
+
+First let's look at the storage as shown in the ISP.  I've merged various classes of storage based on ownership. I've
+grouped the various kinds of large scale utility storage into one category and the various categories of household
+storage into another. The cost of the ISP doesn't include the costs incurred by householders in buying storage, despite
+the fact that most of the storage is *assumed* to be "coordinated", meaning controlled by AEMO or some other
+more locallised mechanism (e.g., virtual power plants (VPP). 
+
+If householder's don't buy the storage, then the ISP will need to change radically; the storage is central.  
+
 
 
 

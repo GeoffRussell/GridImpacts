@@ -1,3 +1,6 @@
+
+### The amount of storage in these charts is misleading
+
 The above chart is a little misleading.  The two huge pumped-hydro schemes, Borumba in Queensland and Snowy 2.0 in
 NSW make it look like there will be far more storage in NSW and QLD than will actually be the case in
 any physical sense. Both contain very large amounts of energy choked off by relatively small turbines.
@@ -8,5 +11,21 @@ This sounds like a lot until I tell you that 8,000 dozen are in one store room a
 served by one vendor from a single point.
 
 That's the problem with Borumba and Snowy 2.0. Both are large energy stores behind choke points; 2,000 MW turbines. 
+
+### Borumba and Snowy 2.0 are more like baseload
+
+Borumba and Snowy 2.0 should be thought of as baseload resources. They can come in during long runs of windless nights to reduce the variability that the rest of the system has to handle.
+
+### A more realistic chart
+
+Remove Borumba and Snowy 2.0 and you get a more realistic chart of storage.
+
+**Note that these charts show total energy stored, not the available power; they show GWh not GW.**
+
+## Generation overbuild 
+
+
+
+## Transmission 
 
 
