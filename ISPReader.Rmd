@@ -112,7 +112,7 @@ plotStorGWh<-function(df,region,storTypes,lab,sup) {
     ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +
     labs(x="",title=paste0(region," Storage by year\n",lab,"Data: AEMO/ISP2024 (CDP3)")) +
     scale_fill_manual(breaks=c("Grid","Household","Borumba","Snowy2.0"),
-        values=c("grey90","grey2","lightblue","blue"),labels=c("Grid","Household","Borumba","Snowy2.0"))
+        values=c("grey70","grey2","lightblue","blue"),labels=c("Grid","Household","Borumba","Snowy2.0"))
   print(p+theme_bw())
   dopng(paste0(region,sup,"StorageMWhISPCDP3.png"),p,w=2500,h=1800)
 }
@@ -133,16 +133,16 @@ plotStorGWh(cdp3storMWh,"NEM",redStorTypes,"without Borumba/Snowy2.0\n","-noph")
 ```
 
 ```{r}
-p<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Without Borumba/Snowy2.0)\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) + scale_fill_manual(values=c("grey90","grey2"),labels=c("Grid","Household"))
-  print(p+theme_bw()+facet_grid(.~Region))
+p<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Without Borumba/Snowy2.0)\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) + scale_fill_manual(values=c("grey70","grey2"),labels=c("Grid","Household"))+theme_bw()+facet_grid(.~Region)
+  print(p)
 dopng("ByStateStorageMWh-noph-ISPCDP3.png",p,w=2500,h=1800)
 
 p<-cdp3storMWh |> filter(Technology %in% storTypes) |> combineStorageTypes() |> 
   ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +
   labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) +
   scale_fill_manual(breaks=c("Grid","Household","Borumba","Snowy2.0"), 
-                    values=c("grey90","grey2","lightblue","blue"),labels=c("Grid","Household","Borumba","Snowy2.0"))
-  print(p+theme_bw()+facet_grid(.~Region))
+                    values=c("grey70","grey2","lightblue","blue"),labels=c("Grid","Household","Borumba","Snowy2.0"))+theme_bw()+facet_grid(.~Region)
+  print(p)
 dopng("ByStateStorageMWh-ISPCDP3.png",p,w=2500,h=1800)
 ```
 ```
