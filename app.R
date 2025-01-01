@@ -456,7 +456,10 @@ ui <- function(request) {
                                          markdownFile("ob1b.txt")
                                 ),
                                 tabPanel("ISP",
-                                         markdownFile("isp.txt")
+                                         markdownFile("isp1.txt"),
+                                         fluidRow(align="center",imageOutput("NEMstor1",height=400)),
+                                         markdownFile("isp2.txt"),
+                                         fluidRow(align="center",imageOutput("NEMstor2",height=400)),
                                 ),
                                 tabPanel("About",
                                          markdownFile("about.txt")
@@ -484,6 +487,8 @@ server <- function(ui,input, output) {
     })
 
     output$weekpng<-renderImage(list(src="WeekEnding30-11-2023.png",height=400),deleteFile=FALSE)
+    output$NEMstor1<-renderImage(list(src="ByStateStorageMWh-ISPCDP3.png",height=400),deleteFile=FALSE)
+    output$NEMstor2<-renderImage(list(src="ByStateStorageMWh-noph-ISPCDP3.png",height=400),deleteFile=FALSE)
     
     output$calctableexp <- renderUI({
         tags$div(
