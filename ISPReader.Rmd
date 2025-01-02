@@ -57,8 +57,9 @@ makeTypes<-function(.data) {
 # List Sheets 
 
 ```{r}
+dir="/home/geoff/ARTICLES/GRID/ISP2024/Core/"
 fle="2024-ISP-Step-Change-Core.xlsx"
-isp<-excel_sheets(fle)
+isp<-excel_sheets(paste0(dir,fle))
 isp
 ```
 # Normalise and lengthen data
@@ -78,12 +79,12 @@ normalise<-function(.data,cname) {
   dtmp
 }
 getSheet<-function(name,cdp,fil,cname) {
-  read_excel(fle,sheet=name,skip=2) |> filter(CDP==cdp) |> normalise(cname) |> fil() 
+  read_excel(paste0(dir,fle),sheet=name,skip=2) |> filter(CDP==cdp) |> normalise(cname) |> fil() 
 }
 nullfilter <- function(.data) {
   .data 
 }
-dfcsv<-read_excel(fle,sheet="Storage Energy",skip=2) |> filter(CDP=="CDP3") 
+dfcsv<-read_excel(paste0(dir,fle),sheet="Storage Energy",skip=2) |> filter(CDP=="CDP3") 
 write_csv(dfcsv,"isp2024-cdp3-stor-gwh.csv")
 ```
 
@@ -133,7 +134,10 @@ plotStorGWh(cdp3storMWh,"NEM",redStorTypes,"without Borumba/Snowy2.0\n","-noph")
 ```
 
 ```{r}
-p<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Without Borumba/Snowy2.0)\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) + scale_fill_manual(values=c("grey70","grey2"),labels=c("Grid","Household"))+theme_bw()+facet_grid(.~Region)
+p<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> 
+  ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +
+  labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Without Borumba/Snowy2.0)\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) +
+  scale_fill_manual(values=c("grey70","grey2"),labels=c("Grid","Household"))+theme_bw()+facet_grid(.~Region)
   print(p)
 dopng("ByStateStorageMWh-noph-ISPCDP3.png",p,w=2500,h=1800)
 
@@ -145,8 +149,6 @@ p<-cdp3storMWh |> filter(Technology %in% storTypes) |> combineStorageTypes() |>
   print(p)
 dopng("ByStateStorageMWh-ISPCDP3.png",p,w=2500,h=1800)
 ```
-```
-
 
 
 ```{r}
@@ -182,20 +184,53 @@ byyear<-cdp3sa  |> group_by(Year) |>  summarise(
 ```
 
 ```{r}
+combineTypes<-function(.data) {
+  .data |> mutate(WhoOwns=case_when(
+    Technology=='Coordinated CER storage' ~ 'Household',
+    Technology=='Passive CER storage' ~ 'Household',
+    Technology=='Utility storage' ~ 'Grid',
+    Technology=='Shallow storage' ~ 'Grid',
+    Technology=='Deep storage' ~ 'Grid',
+    Technology=='Medium storage' ~ 'Grid',
+    Technology=='Borumba' ~ 'Borumba',
+    Technology=='Snowy 2.0' ~ 'Snowy2.0'
+  ))
+}
 storCats<-c("Coordinated CER storage","Passive CER storage","Utility storage")
 plotStorCap<-function(df,region) {
-  p<-df |> filter(Technology %in% storCats) |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Technology),position="stack") +labs(x="",title=paste0(region," Storage capacity by year (ISP2024/CDP3)")) 
+  p<-df |> filter(Technology %in% storCats) |> combineTypes() |> ggplot()+geom_col(aes(x=Year,y=MW,fill=WhoOwns),position="stack") +
+    labs(x="",title=paste0(region," Storage capacity by year (ISP2024/CDP3)")) +
+    scale_fill_manual(values=c("grey70","grey2"),labels=c("Grid","Household"))+theme_bw()
   print(p)
-  dopng(paste0(region,"StorageISPCDP3.png"),p,w=2500,h=1800)
+  dopng(paste0(region,"-CapacityISPCDP3.png"),p,w=2500,h=1800)
   
 }
 plotStorCap(cdp3sa,"SA")
 plotStorCap(cdp3vic,"VIC")
 plotStorCap(cdp3nsw,"NSW")
 plotStorCap(cdp3qld,"QLD")
+p<-cdp3cap |> filter(Technology %in% storCats) |> combineTypes() |> ggplot()+geom_col(aes(x=Year,y=MW,fill=WhoOwns),position="stack") +
+  labs(x="",title=paste0("NEM"," Storage capacity by year (ISP2024/CDP3)")) +
+  scale_fill_manual(values=c("grey70","grey2"),labels=c("Grid","Household"))+theme_bw()
+p
+dopng(paste0("NEM","-CapacityISPCDP3.png"),p,w=2500,h=1800)
 ```
-```{r}
 
+
+```{r}
+cdp3sa |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Type),position="stack")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=SolarWindRatio))+labs(x="",title="Solar to Wind Ratio (NEM) ")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=StorageSolarRatio))+labs(x="",title="Storage MW to Solar MW (NEM)")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=StorageVRERatio))+labs(x="",title="Storage MW to Solar+Wind MW (NEM)")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=GStorageGVRERatio))+labs(x="",title="Grid Storage MW to Grid Solar+Wind MW (NEM)")
+byyearnem |> ggplot()+geom_col(aes(x=Year,y=GStorageGSolarRatio))+labs(x="",title="Grid Storage MW to Grid Solar MW (NEM)")
+byyear |> ggplot()+geom_col(aes(x=Year,y=SolarWindRatio))+labs(title="Solar to Wind Ratio South Australia (SA)")
+byyear |> ggplot()+geom_col(aes(x=Year,y=StorageSolarRatio))+labs(title="Storage to Solar ratio (SA)")
+byyear |> ggplot()+geom_col(aes(x=Year,y=GStorageGSolarRatio))+labs(title="Grid Storage to Grid Solar ratio (SA)")
+byyear |> ggplot()+geom_col(aes(x=Year,y=GStorageGVRERatio))+labs(x="",title="Grid Storage MW to Grid Solar+Wind MW (SA)")
+```
+
+```{robsolete}
 p<-cdp3sa |> filter(Subregion=="CSA") |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Technology),position="stack") +labs(x="",title="SA Capacity by year (ISP2024/CDP3)") +
   geom_text(aes(x=Year,y=MW,label=comma(MW),fill=Technology),position="stack",size=2,hjust=0.5,vjust=1) 
 p
@@ -215,17 +250,4 @@ p<-cdp3qld |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Technology),position="stack
   geom_text(aes(x=Year,y=MW,label=comma(MW),fill=Technology),position="stack",size=2,hjust=0.5,vjust=1) + facet_grid(.~Subregion)
 p
 dopng("QLDCapacityISPCDP3.png",p,w=2500,h=1800)
-```
-
-```{r}
-cdp3sa |> ggplot()+geom_col(aes(x=Year,y=MW,fill=Type),position="stack")
-byyearnem |> ggplot()+geom_col(aes(x=Year,y=SolarWindRatio))+labs(x="",title="Solar to Wind Ratio (NEM) ")
-byyearnem |> ggplot()+geom_col(aes(x=Year,y=StorageSolarRatio))+labs(x="",title="Storage MW to Solar MW (NEM)")
-byyearnem |> ggplot()+geom_col(aes(x=Year,y=StorageVRERatio))+labs(x="",title="Storage MW to Solar+Wind MW (NEM)")
-byyearnem |> ggplot()+geom_col(aes(x=Year,y=GStorageGVRERatio))+labs(x="",title="Grid Storage MW to Grid Solar+Wind MW (NEM)")
-byyearnem |> ggplot()+geom_col(aes(x=Year,y=GStorageGSolarRatio))+labs(x="",title="Grid Storage MW to Grid Solar MW (NEM)")
-byyear |> ggplot()+geom_col(aes(x=Year,y=SolarWindRatio))+labs(title="Solar to Wind Ratio South Australia (SA)")
-byyear |> ggplot()+geom_col(aes(x=Year,y=StorageSolarRatio))+labs(title="Storage to Solar ratio (SA)")
-byyear |> ggplot()+geom_col(aes(x=Year,y=GStorageGSolarRatio))+labs(title="Grid Storage to Grid Solar ratio (SA)")
-byyear |> ggplot()+geom_col(aes(x=Year,y=GStorageGVRERatio))+labs(x="",title="Grid Storage MW to Grid Solar+Wind MW (SA)")
 ```
