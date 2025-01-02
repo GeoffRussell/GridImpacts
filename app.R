@@ -128,7 +128,7 @@ readDataSet<-function(n) {
     rename_with(~sub('  ',' ',.x))
   #print(colnames(dfdata))
   # A bit risky to just replace NAs, 
-  dfdata %>% mutate(across(everything(),replace_na,0)) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
+  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
 }
 dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
@@ -369,6 +369,7 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 #-----------------------------------------------------------------
 # UI
 #-----------------------------------------------------------------
+addResourcePath("thorconplot","/home/geoff/ARTICLES/STATS/MasteringShiny/ClimateActionSupplyChains/")
 ui <- function(request) {
     fluidPage(theme = shinytheme("yeti"),
                 tags$head(
@@ -462,8 +463,8 @@ ui <- function(request) {
                                          fluidRow(align="center",imageOutput("NEMstor2",height=400)),
                                 ),
                                 tabPanel("About",
-                                         markdownFile("about.txt")
-                                )
+                                         markdownFile("about.txt"),
+                                ),
                     ),width=12
                   )
             )
@@ -484,6 +485,12 @@ server <- function(ui,input, output) {
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
+    })
+    # This doesn't work ... not sure why
+    output$globalenergy<-renderUI({
+      ttt<-tags$iframe(src="file:///home/geoff/ARTICLES/STATS/MasteringShiny/ClimateActionSupplyChains/thorconplot-bygroup.html",width="100%")
+      print(ttt)
+      ttt
     })
 
     output$weekpng<-renderImage(list(src="WeekEnding30-11-2023.png",height=400),deleteFile=FALSE)
