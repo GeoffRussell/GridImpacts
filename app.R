@@ -126,7 +126,7 @@ isqld<-function(f) {
 # The input has a different set of columns by region
 #---------------------------------------------------------------------------------------------------------
 readDataSet<-function(n) {
-  print(n)
+  #print(n)
   flds<-fields
   if (isnem(n)) {
     flds<-fieldsNEM
@@ -228,8 +228,6 @@ cols<-c(
 # Calc: the main function which calculates the flow of electricity
 # between the generators and batteries
 #-----------------------------------------------------------------
-
-
 calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
   print(dataSets[dspick])
   gasmw<-ifelse(gaspeak>0,gaspeak*1000,0)
@@ -386,6 +384,17 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 }
 
 
+#-----------------------------------------------------------------
+# Constants 
+#-----------------------------------------------------------------
+storTable<-tribble(
+  ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,
+  "NSW",  97000, 22000, 2000, 0, 0,
+  "QLD",  48000, 13000, 1000, 0, 0,
+  "SA",  16000, 4700, 500, 0, 500,
+  "NEM",  225000, 57000, 4500, 0, 0,
+  "VIC",  50000, 12000, 1000, 0, 0
+)
 
 #-----------------------------------------------------------------
 # UI
@@ -431,8 +440,9 @@ ui <- function(request) {
                                            column(width=4,
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
                                                   bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
-                                                  sliderInput("bsize",label="Battery size in MWh", min=500,max=10000,step=500,value=500),
-                                                  sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1)
+                                                  sliderInput("bsize",label="Battery size in MWh", min=500,max=50000,step=500,value=500),
+                                                  sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
+                                                  bsTooltip("bsize","Energy capacity of magic battery, N.B. slider max is set to ISP region max in 2050",placement="top",trigger="hover")
                                            ),
                                            column(width=4,
                                                   sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
@@ -492,24 +502,28 @@ ui <- function(request) {
 }
 
 
+getState<-function(nm) {
+  m<-str_match(nm,"\\(([A-Z]*)\\)")
+  #print(paste0("MATCH: ",m))
+  m[2]
+}
 
 # Define server logic required to draw a histogram
 server <- function(ui,input, output,session) {
     mtheme<-theme(plot.margin=unit(c(5,0,0,0),"mm"))
     ptheme<-theme(plot.title=element_text(color="#008080",size=15,face="bold",family="Helvetica"),
                 axis.text=element_text(face="bold",size=12))+mtheme
-    runjs('$("#mainPanel").css("width", "1200px");')
+#    runjs('$("#mainPanel").css("width", "1200px");')
     
     v<-reactiveValues(u=NULL)
     observeEvent(input$datasetpick,{
       #print(paste0("OE1: ",input$datasetpick))
       v$datasetpick=input$datasetpick
-      if (isnem(input$datasetpick)) {
-          updateSliderInput(session,"bsize",max=50000,step=2000,min=0,value=0)
-      }
-      if (issa(input$datasetpick)) {
-          updateSliderInput(session,"bsize",max=10000,step=500,value=500)
-      }
+      row<-storTable |> filter(State=="SA")
+      st<-getState(input$datasetpick)
+      row<-storTable |> filter(State==st)
+      #print(paste0("OE1: ",row))
+      updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize,value=row$Value)
     })
     gendfsum<-reactive({
       print(input$datasetpick)
@@ -660,7 +674,7 @@ server <- function(ui,input, output,session) {
       if (input$showWindDemand) {
         dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
         x<-str_split_1(thetitle,"\n")
-        print(x)
+        #print(x)
         thetitle<-paste0("Electricity demand vs wind\n",x[2])
         thecols=colswind
         thelabs=labswind
@@ -710,7 +724,7 @@ server <- function(ui,input, output,session) {
       else {
         coef=maxsupply/mm*1000
       }
-      print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
+      #print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
       #print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
       #print(ll)
       lasttime<-dfsum$Time[nperiods-1]
