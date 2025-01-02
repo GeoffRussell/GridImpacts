@@ -79,22 +79,26 @@ for (i in dataSets) {
 #-----------------------------------------------------
 # Define various constants and functions used to process the data
 #-----------------------------------------------------
-findColumns<-function(df) {
+# The columns output by openNEM vary between states and will change over time. Hopefully this function will find the right ones!
+#-----------------------------------------------------
+findDemandColumns<-function(df) {
   l<-tibble()
   for(n in colnames(df)) {
-    if (n=="Time") {
+    if (n=="Time") {         # we ignore the Time and Exports fields 
       next;
     }
     if (!grepl("Exports",n)) {
       l=bind_rows(l,tibble(flds=c(n)))
     }
-    if (grepl("Rooftop",n)) {
+    if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
       break;
     }
   }
-  #as.vector(l$flds)
   l$flds
 }
+#-------------------------------------------------------------------------------------------------------
+# Obsolete code ... replaced by findDemandColumns
+#-------------------------------------------------------------------------------------------------------
 fields<-c("Battery (Charging) - MW","Imports - MW","Distillate - MW","Gas (Steam) - MW","Gas (CCGT) - MW", "Gas (OCGT) - MW","Gas (Reciprocating) - MW","Battery (Discharging) - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
 fieldsVIC<-c("Battery (Charging) - MW","Imports - MW","Coal (Brown) - MW","Gas (OCGT) - MW",
              "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
@@ -103,7 +107,6 @@ fieldsQLD<-c("Battery (Charging) - MW","Pumps - MW","Imports - MW","Coal (Black)
       "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")                      
 fieldsNEM<-c("Battery (Charging) - MW","Coal (Brown) - MW","Gas (OCGT) - MW",
              "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
-
 isnem<-function(f) {
   str_detect(f,"NEM\\)")
 }
@@ -113,9 +116,15 @@ isnsw<-function(f) {
 isvic<-function(f) {
   str_detect(f,"VIC\\)")
 }
+issa<-function(f) {
+  str_detect(f,"SA\\)")
+}
 isqld<-function(f) {
   str_detect(f,"QLD\\)")
 }
+#---------------------------------------------------------------------------------------------------------
+# The input has a different set of columns by region
+#---------------------------------------------------------------------------------------------------------
 readDataSet<-function(n) {
   print(n)
   flds<-fields
@@ -128,18 +137,17 @@ readDataSet<-function(n) {
   if (isqld(n)) {
     flds<-fieldsQLD
   }
-  
   dfdata<-read_csv(dataSets[n]) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
     rename_with(~sub('  ',' ',.x))
   
-  print(paste(flds))
-  print(paste(findColumns(dfdata)))
+  #print(paste(flds))
+  #print(paste(findDemandColumns(dfdata)))
   # print(colnames(dfdata))
-  # A bit risky to just replace NAs, 
+  # A bit risky to just replace NAs
   # dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
   
-  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(findColumns(dfdata))) %>% apply(1,sum)) 
+  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(findDemandColumns(dfdata))) %>% apply(1,sum)) 
 }
 dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
@@ -220,6 +228,8 @@ cols<-c(
 # Calc: the main function which calculates the flow of electricity
 # between the generators and batteries
 #-----------------------------------------------------------------
+
+
 calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
   print(dataSets[dspick])
   gasmw<-ifelse(gaspeak>0,gaspeak*1000,0)
@@ -484,23 +494,29 @@ ui <- function(request) {
 
 
 # Define server logic required to draw a histogram
-server <- function(ui,input, output) {
+server <- function(ui,input, output,session) {
     mtheme<-theme(plot.margin=unit(c(5,0,0,0),"mm"))
     ptheme<-theme(plot.title=element_text(color="#008080",size=15,face="bold",family="Helvetica"),
                 axis.text=element_text(face="bold",size=12))+mtheme
     runjs('$("#mainPanel").css("width", "1200px");')
+    
+    v<-reactiveValues(u=NULL)
+    observeEvent(input$datasetpick,{
+      #print(paste0("OE1: ",input$datasetpick))
+      v$datasetpick=input$datasetpick
+      if (isnem(input$datasetpick)) {
+          updateSliderInput(session,"bsize",max=50000,step=2000,min=0,value=0)
+      }
+      if (issa(input$datasetpick)) {
+          updateSliderInput(session,"bsize",max=10000,step=500,value=500)
+      }
+    })
     gendfsum<-reactive({
       print(input$datasetpick)
       bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize,input$gaspeak*input$gasmult)
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
-    })
-    # This doesn't work ... not sure why
-    output$globalenergy<-renderUI({
-      ttt<-tags$iframe(src="file:///home/geoff/ARTICLES/STATS/MasteringShiny/ClimateActionSupplyChains/thorconplot-bygroup.html",width="100%")
-      print(ttt)
-      ttt
     })
 
     output$weekpng<-renderImage(list(src="WeekEnding30-11-2023.png",height=400),deleteFile=FALSE)
