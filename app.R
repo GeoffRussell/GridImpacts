@@ -28,7 +28,7 @@ tfgcolor="grey10"
 gasintensity<-0.437    # kg-co2/kwh (EIA)
 
 #-----------------------------------------------------
-# Read 2024 ISP data 
+# 2024 ISP data  ... 
 #-----------------------------------------------------
 ispfile="isp2024-cdp3.csv"
 cdp3<-read_csv(ispfile)
@@ -79,21 +79,36 @@ for (i in dataSets) {
 #-----------------------------------------------------
 # Define various constants and functions used to process the data
 #-----------------------------------------------------
+findColumns<-function(df) {
+  l<-tibble()
+  for(n in colnames(df)) {
+    if (n=="Time") {
+      next;
+    }
+    if (!grepl("Exports",n)) {
+      l=bind_rows(l,tibble(flds=c(n)))
+    }
+    if (grepl("Rooftop",n)) {
+      break;
+    }
+  }
+  #as.vector(l$flds)
+  l$flds
+}
 fields<-c("Battery (Charging) - MW","Imports - MW","Distillate - MW","Gas (Steam) - MW","Gas (CCGT) - MW", "Gas (OCGT) - MW","Gas (Reciprocating) - MW","Battery (Discharging) - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
 fieldsVIC<-c("Battery (Charging) - MW","Imports - MW","Coal (Brown) - MW","Gas (OCGT) - MW",
              "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
-fieldsQLD<-c("Battery (Charging) - MW","Pumps - MW","Exports - MW","Imports - MW","Coal (Black) - MW",                          
+fieldsQLD<-c("Battery (Charging) - MW","Pumps - MW","Imports - MW","Coal (Black) - MW",                          
       "Bioenergy (Biomass) - MW","Distillate - MW","Gas (CCGT) - MW","Gas (OCGT) - MW","Gas (Waste Coal Mine) - MW","Battery (Discharging) - MW",                 
       "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")                      
 fieldsNEM<-c("Battery (Charging) - MW","Coal (Brown) - MW","Gas (OCGT) - MW",
              "Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
 
-renewfields<-c("Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
-renewfieldsVIC<-c("Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
-renewfieldsNEM<-c("Hydro - MW","Wind - MW","Solar (Utility) - MW","Solar (Rooftop) - MW")
-annual<-p("SA - annual avg power 1.58GW (2023/4)")
 isnem<-function(f) {
   str_detect(f,"NEM\\)")
+}
+isnsw<-function(f) {
+  str_detect(f,"NSW\\)")
 }
 isvic<-function(f) {
   str_detect(f,"VIC\\)")
@@ -104,31 +119,27 @@ isqld<-function(f) {
 readDataSet<-function(n) {
   print(n)
   flds<-fields
-  annual<<-p("SA - annual avg power 1.58GW (2023/4)")
-  avgpower<<-1.58
   if (isnem(n)) {
-    annual<<-p("NEM- annual avg power 23.9GW (2023/4)")
-    avgpower<<-23.9
     flds<-fieldsNEM
   }
   if (isvic(n)) {
-    annual<<-p("VIC - annual avg power 5.4GW (2023/4)")
-    avgpower<<-5.4
     flds<-fieldsVIC
   }
   if (isqld(n)) {
-    annual<<-p("QLD - annual avg power ???GW (2023/4)")
-    avgpower<<-5.4
     flds<-fieldsQLD
-    print("QLDQLD")
   }
   
   dfdata<-read_csv(dataSets[n]) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
     rename_with(~sub('  ',' ',.x))
-  #print(colnames(dfdata))
+  
+  print(paste(flds))
+  print(paste(findColumns(dfdata)))
+  # print(colnames(dfdata))
   # A bit risky to just replace NAs, 
-  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
+  # dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
+  
+  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(findColumns(dfdata))) %>% apply(1,sum)) 
 }
 dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
@@ -519,7 +530,6 @@ server <- function(ui,input, output) {
         shortMW<-dfsum %>% summarise(max(maxShortMW))
         gasMWh<-dfsum %>% summarise(sum(gasEout))
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
-        print(paste0("Avg power: ",avgpower," GW, Period Avg: ",periodAvgDemand," GW"))
         
         hrs<-8
         dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
