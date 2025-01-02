@@ -369,7 +369,6 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 #-----------------------------------------------------------------
 # UI
 #-----------------------------------------------------------------
-addResourcePath("thorconplot","/home/geoff/ARTICLES/STATS/MasteringShiny/ClimateActionSupplyChains/")
 ui <- function(request) {
     fluidPage(theme = shinytheme("yeti"),
                 tags$head(
