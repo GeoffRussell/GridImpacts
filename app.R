@@ -390,10 +390,10 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 storTable<-tribble(
   ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,
   "NSW",  97000, 22000, 2000, 0, 0,
-  "QLD",  48000, 13000, 1000, 0, 0,
+  "QLD",  48000, 15000, 1000, 0, 0,
   "SA",  16000, 4700, 500, 0, 500,
   "NEM",  225000, 57000, 4500, 0, 0,
-  "VIC",  50000, 12000, 1000, 0, 0
+  "VIC",  50000, 13000, 1000, 0, 0
 )
 
 #-----------------------------------------------------------------
@@ -519,8 +519,8 @@ server <- function(ui,input, output,session) {
     observeEvent(input$datasetpick,{
       #print(paste0("OE1: ",input$datasetpick))
       v$datasetpick=input$datasetpick
-      row<-storTable |> filter(State=="SA")
-      st<-getState(input$datasetpick)
+      st<-getState(v$datasetpick)
+      v$state=st
       row<-storTable |> filter(State==st)
       #print(paste0("OE1: ",row))
       updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize,value=row$Value)
@@ -556,6 +556,8 @@ server <- function(ui,input, output,session) {
         curt<-dfsum %>% summarise(max(cumThrowOutMWh))
         bsup<-dfsum %>% summarise(sum(batterySupplied))
         bmax<-dfsum %>% summarise(max(batterySupplied*12))
+        row<-storTable |> filter(State==v$state)
+        
         totremwh<-dfsum %>% summarise(sum(dblrenew/12))
         shortMW<-dfsum %>% summarise(max(maxShortMW))
         gasMWh<-dfsum %>% summarise(sum(gasEout))
@@ -575,7 +577,7 @@ server <- function(ui,input, output,session) {
                     paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"%)"),
                     paste0(comma(shortMW)," dispatchable MW"),
                     paste0(comma(bsup/1000)," GWh"),
-                    paste0(comma(bmax)," MW"),
+                    paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
                     paste0(comma(100*bsup/((bmax/12)*nperiods)),"%"),
                     paste0(r$Time,": ",comma(-r$diff),"MWh"),
                     paste0(comma(gasMWh/1000)," GWh"),
