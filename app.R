@@ -411,7 +411,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.93)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.94)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -488,6 +488,7 @@ ui <- function(request) {
                                          fluidRow(align="center",imageOutput("NEMstor1",height=400)),
                                          markdownFile("isp2.txt"),
                                          fluidRow(align="center",imageOutput("NEMstor2",height=400)),
+                                         markdownFile("isp3.txt")
                                 ),
                                 tabPanel("About",
                                          markdownFile("about.txt"),
