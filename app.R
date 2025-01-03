@@ -46,6 +46,7 @@ dataSets<-c(
   "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
   "(SA) June 2024"="openNEMMerge-June-2024.csv",
   "(QLD) end of December 2024"="openNEMMerge-QLD-30-12-2024-19D.csv",
+  "(NSW) end of December 2024"="openNEMMerge-NSW-30-12-2024-19D.csv", 
   "(SA) June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
   "(SA) WE 30 January 2024"="openNem-SA-30-01-24-7D.csv",
   "(SA) WE 30 November 2023"="opennem-30-11-2023sa5.csv",
@@ -54,6 +55,7 @@ dataSets<-c(
   "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles<-c(
+  "(NSW) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024", 
   "(QLD) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
   "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(Victoria) Week ending 25 Jan 2024",
   "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 16 May 2024",
@@ -87,7 +89,8 @@ findDemandColumns<-function(df) {
     if (n=="Time") {         # we ignore the Time and Exports fields 
       next;
     }
-    if (!grepl("Exports",n)) {
+    if (!grepl("Exports|Charging",n)) {
+      print(paste0("Got ",n))
       l=bind_rows(l,tibble(flds=c(n)))
     }
     if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
@@ -127,27 +130,19 @@ isqld<-function(f) {
 #---------------------------------------------------------------------------------------------------------
 readDataSet<-function(n) {
   #print(n)
-  flds<-fields
-  if (isnem(n)) {
-    flds<-fieldsNEM
-  }
-  if (isvic(n)) {
-    flds<-fieldsVIC
-  }
-  if (isqld(n)) {
-    flds<-fieldsQLD
-  }
   dfdata<-read_csv(dataSets[n]) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
     rename_with(~sub('  ',' ',.x))
   
-  #print(paste(flds))
+  flds<-findDemandColumns(dfdata)
+  
+  print(paste(flds))
   #print(paste(findDemandColumns(dfdata)))
   # print(colnames(dfdata))
   # A bit risky to just replace NAs
   # dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
   
-  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(findDemandColumns(dfdata))) %>% apply(1,sum)) 
+  dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
 }
 dfout<-readDataSet("(SA) WE 30 November 2023")
 #---------------------------------------------------------------------------------------
@@ -389,11 +384,11 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 #-----------------------------------------------------------------
 storTable<-tribble(
   ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,
-  "NSW",  97000, 22000, 2000, 0, 0,
-  "QLD",  48000, 15000, 1000, 0, 0,
+  "NSW",  97000, 22000, 2000, 0, 2400,
+  "QLD",  48000, 15000, 1000, 0, 1700,
   "SA",  16000, 4700, 500, 0, 500,
-  "NEM",  225000, 57000, 4500, 0, 0,
-  "VIC",  50000, 13000, 1000, 0, 0
+  "NEM",  225000, 57000, 4500, 0, 6200,
+  "VIC",  50000, 13000, 1000, 0, 1150
 )
 
 #-----------------------------------------------------------------
