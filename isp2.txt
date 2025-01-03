@@ -24,8 +24,10 @@ Remove Borumba and Snowy 2.0 and you get a more realistic chart of storage.
 
 ## Generation overbuild 
 
-
+[to be completed]
 
 ## Transmission 
+
+[to be completed]
 
 

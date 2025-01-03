@@ -9,7 +9,11 @@ there are a couple of Victorian sets and one from the entire NEM.
 
 ### Slider: Battery Size in MWh
 
-The is the total energy storage capacity available. In South Australia at the end of 2024, there was 618 MWh of battery storage, most of it in 2 big batteries: 150 MW/194MWh and 250MW/250MWh.
+You can set this to the total energy storage you want to investigate.  The upper bound of
+the slider roughly matches the amount of energy storage that the ISP considers being available in 2050. You
+can use the "Battery multiplier" slider to exceed this if you wish.
+
+In South Australia at the end of 2024, there was 618 MWh of battery storage, most of it in 2 big batteries: 150 MW/194MWh and 250MW/250MWh.
 
 The GridImpacts model assumes that battery storage is **magic**. By which I mean it can store
 any excess energy regardless of the power and location of that energy. In the real world, the transmission
@@ -19,8 +23,7 @@ with magic batteries, nothing is ever wasted if there is available battery space
 
 ### Slider: Battery multiplier
 
-For the NEM dataset, you'd want to model much bigger batteries than for South Australia. This slider just
-multiplies the battery size. 
+This slider just multiplies the battery size. It predates the dynamic setting of the Battery Size upper bound, but has been retained to allow you to specify even bigger sizes. 
 
 ### Slider: Gas Peakers (GW) 
 
