@@ -659,7 +659,7 @@ server <- function(ui,input, output,session) {
       gp<-ifelse(input$gaspeak>0,paste0("Gas",comma(input$gaspeak*input$gasmult)),"")
       ff<-gsub(" ","",input$datasetpick)
       fname=paste0("dfsum-",bl,"-",bsz,"-",ovfac,"-",ff,"-",gp,".csv")
-      write_csv(dfsum,fname)
+      #write_csv(dfsum,fname)
       maxshort<-max(dfcumshort$cumShortMWh)
       maxcurt<-max(dfcumshort$cumThrowOutMWh)
       
