@@ -449,7 +449,7 @@ ui <- function(request) {
                                            ),
                                            column(width=4,
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
-                                                  checkboxInput("showCurtailed",label="Show dumped energy (GWh)",value=FALSE),
+                                                  checkboxInput("showCurtailed",label="Show curtailed energy (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
                                                   checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE)
                                            )
@@ -670,6 +670,7 @@ server <- function(ui,input, output,session) {
       #write_csv(dfsum,fname)
       maxshort<-max(dfcumshort$cumShortMWh)
       maxcurt<-max(dfcumshort$cumThrowOutMWh)
+      maxdemand<-max(dfcumshort$demand)
       
       thecols=colsshort
       thelabs=labsshort
@@ -721,8 +722,9 @@ server <- function(ui,input, output,session) {
       bfac=input$bsize*input$bmult
       if (bfac==0) bfac=1000
       bfac=maxsupply
+      ay=max(maxsupply,maxdemand)
       mm=max(maxshort,maxcurt,999)
-      if (maxshort==999) {
+      if (mm==999) {
         coef<-500*(3/28)
       }
       else {
@@ -732,6 +734,11 @@ server <- function(ui,input, output,session) {
       #print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
       #print(ll)
       lasttime<-dfsum$Time[nperiods-1]
+      annotation=tibble(
+          x=c(lasttime,lasttime),
+          y=c(ay,ay*0.91),
+          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Curtailed: ",comma(maxcurt/1000)," GWh"))
+      ) 
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
         ptheme +
@@ -760,15 +767,17 @@ server <- function(ui,input, output,session) {
           scale_fill_manual(name="Shortfall",labels=ll,values=vv)
         }+
         geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
-        annotate('text',x=lasttime,y=maxsupply,label=paste0("Shortfall: ",comma(maxshort/1000)," GWh"),hjust=1,size=5)+
         labs(color="Supply/Demand (MW)",title=thetitle)+
         scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
         scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
+        geom_text(aes(x=x,y=y,label=label,family="Times",fontface="bold"),color="blue",data=annotation,hjust=1,size=8)+
         scale_y_continuous(
           name="Megawatts (supply/demand/overbuild)",
           sec.axis = sec_axis(~./coef, name="Cumulative shortfall/curtailment in GWh")
         )+theme(legend.direction="vertical",legend.box="vertical")
-        p+theme_bw()+theme(legend.position="bottom",legend.box="vertical")
+        p+theme_bw()+theme(legend.position="bottom",legend.box="vertical",
+                           plot.title=element_text(family="Ubuntu Condensed",face="bold",size=20),
+                           text=element_text(family="Ubuntu Condensed",face="bold",size=16))
     })
 }
 
