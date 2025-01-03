@@ -90,7 +90,6 @@ findDemandColumns<-function(df) {
       next;
     }
     if (!grepl("Exports|Charging",n)) {
-      print(paste0("Got ",n))
       l=bind_rows(l,tibble(flds=c(n)))
     }
     if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
@@ -383,12 +382,12 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 # Constants 
 #-----------------------------------------------------------------
 storTable<-tribble(
-  ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,
-  "NSW",  97000, 22000, 2000, 0, 2400,
-  "QLD",  48000, 15000, 1000, 0, 1700,
-  "SA",  16000, 4700, 500, 0, 500,
-  "NEM",  225000, 57000, 4500, 0, 6200,
-  "VIC",  50000, 13000, 1000, 0, 1150
+  ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,~Wind2050,~Solar2050, ~Wind2024, ~Solar2024,
+  "NSW",  97000,   22000,    2000,       0, 2400,      20,      50,           2.8,       12.4,             
+  "QLD",  48000,   15000,    1000,       0, 1700,      21,      47,           2.5,         10,      
+  "SA",  16000,    4700,      500,       0,  500,       6,      14,           2.6,        3.4,
+  "NEM",  225000,  57000,    4500,       0, 6200,      68,     141,            13,         33,
+  "VIC",  50000,   13000,    1000,       0, 1150,      18,      31,           4.5,          7
 )
 
 #-----------------------------------------------------------------
@@ -433,7 +432,7 @@ ui <- function(request) {
                                         ),
                                          fluidRow(
                                            column(width=4,
-                                                  sliderInput("ofac",label="Overbuild factor",min=1,max=3,step=0.1,value=1),
+                                                  sliderInput("ofac",label="Overbuild factor",min=1,max=6,step=0.25,value=1),
                                                   bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=50000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
