@@ -16,6 +16,7 @@ library(bslib)
 library(bsicons)
 
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
+comma3<-function(x) prettyNum(signif(x,digits=3),big.mark=",")
 markdownFile<-function(filename) {
   t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
   #t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
@@ -389,6 +390,8 @@ storTable<-tribble(
   "NEM",  225000,  57000,    4500,       0, 6200,      68,     141,            13,         33,
   "VIC",  50000,   13000,    1000,       0, 1150,      18,      31,           4.5,          7
 )
+storTableCalc<-storTable |> mutate(ofac=(Wind2050+Solar2050)/(Wind2024+Solar2024))
+print(storTableCalc)
 
 #-----------------------------------------------------------------
 # UI
@@ -427,16 +430,16 @@ ui <- function(request) {
                                                               multiple=FALSE,
                                                               label = 'Datasets'
                                                   ), 
-                                                  bsTooltip("datasetpick","Select an alternative set of real world data",placement="top",trigger="hover")
+                                                  bsTooltip("datasetpick","Select an alternative set of real world data, your choice determines the region and sets slider limits",placement="top",trigger="hover")
                                           )
                                         ),
                                          fluidRow(
                                            column(width=4,
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=6,step=0.25,value=1),
-                                                  bsTooltip("ofac","Increase current level of wind+solar by this factor",placement="top",trigger="hover"),
+                                                  bsTooltip("ofac","Increase current level of wind+solar by this factor, limit is set at 2050 ISP level for region",placement="top",trigger="hover"),
                                                   sliderInput("bsize",label="Battery size in MWh", min=500,max=50000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
-                                                  bsTooltip("bsize","Energy capacity of magic battery, N.B. slider max is set to ISP region max in 2050",placement="top",trigger="hover")
+                                                  bsTooltip("bsize","Energy capacity of magic battery, limit is ISP region max in 2050",placement="top",trigger="hover")
                                            ),
                                            column(width=4,
                                                   sliderInput("baseloadsize",label="Baseload size (MW)", min=0,max=1800,step=600,value=0),
@@ -509,15 +512,19 @@ server <- function(ui,input, output,session) {
                 axis.text=element_text(face="bold",size=12))+mtheme
 #    runjs('$("#mainPanel").css("width", "1200px");')
     
-    v<-reactiveValues(u=NULL)
+    v<-reactiveValues(ofac=1)
+    observeEvent(input$ofac,{
+      v$ofac=input$ofac
+    })
     observeEvent(input$datasetpick,{
       #print(paste0("OE1: ",input$datasetpick))
       v$datasetpick=input$datasetpick
       st<-getState(v$datasetpick)
       v$state=st
-      row<-storTable |> filter(State==st)
-      #print(paste0("OE1: ",row))
+      row<-storTableCalc |> filter(State==st)
+      #print(paste0("OE1: ",stor))
       updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize,value=row$Value)
+      updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1,value=ifelse(v$ofac<=row$ofac,v$ofac,1))
     })
     gendfsum<-reactive({
       print(input$datasetpick)
