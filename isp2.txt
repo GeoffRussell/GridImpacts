@@ -14,7 +14,7 @@ That's the problem with Borumba and Snowy 2.0. Both are large energy stores behi
 
 ### Borumba and Snowy 2.0 are more like baseload
 
-Borumba and Snowy 2.0 should be thought of as baseload resources. They can come in during long runs of windless nights to reduce the variability that the rest of the system has to handle.
+Borumba and Snowy 2.0 should be thought of as *baseload* resources. They can come in during long runs of windless nights to reduce the variability that the rest of the system has to handle.
 
 ### A more realistic chart
 
@@ -22,12 +22,5 @@ Remove Borumba and Snowy 2.0 and you get a more realistic chart of storage.
 
 **Note that these charts show total energy stored, not the available power; they show GWh not GW.**
 
-## Generation overbuild 
-
-[to be completed]
-
-## Transmission 
-
-[to be completed]
 
 

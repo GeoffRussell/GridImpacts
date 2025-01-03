@@ -9,11 +9,11 @@ there are a couple of Victorian sets and one from the entire NEM.
 
 ### Slider: Battery Size in MWh
 
-You can set this to the total energy storage you want to investigate.  The upper bound of
+You can set this to the total energy storage you want to investigate.  The upper limit of
 the slider roughly matches the amount of energy storage that the ISP considers being available in 2050. You
 can use the "Battery multiplier" slider to exceed this if you wish.
 
-In South Australia at the end of 2024, there was 618 MWh of battery storage, most of it in 2 big batteries: 150 MW/194MWh and 250MW/250MWh.
+### Note on magic batteries 
 
 The GridImpacts model assumes that battery storage is **magic**. By which I mean it can store
 any excess energy regardless of the power and location of that energy. In the real world, the transmission
@@ -21,9 +21,15 @@ lines between that excess energy and the batteries may not be available; they ma
 In which case that excess energy will simply be lost; but in my simple model 
 with magic batteries, nothing is ever wasted if there is available battery space. 
 
+For example, in South Australia at the end of 2024, there was 1,018 MWh 
+of battery energy storage, most of it in 3 big 
+batteries: Hornsdale 150 MW/194MWh, Torrens Island 250MW/250MWh, and Blyth 200MW/400MWh. In total we have a
+maximum of 805 MW available; but if you set the GridImpacts Battery Size to 1,018 MWh, it would assume you could
+supply 1,018 MW for an hour; or even 2,036 MW for half an hour ... that's what magic batteries do. 
+
 ### Slider: Battery multiplier
 
-This slider just multiplies the battery size. It predates the dynamic setting of the Battery Size upper bound, but has been retained to allow you to specify even bigger sizes. 
+This slider just multiplies the battery size. It predates the dynamic setting of the Battery Size upper limit, but has been retained to allow you to specify even bigger sizes. 
 
 ### Slider: Gas Peakers (GW) 
 
@@ -43,18 +49,28 @@ gas system.
 
 ### Slider: Peaker multiplier 
 
+This multiplies the peak gas power output.
 
 ### Slider: Overbuild factor 
 
 This slider allows you to see what happens if you just double the existing amount of wind and solar capacity. 
 
-As this factor rises, you will see more energy flow into the battery. Eventually the battery will be full and more energy will be curtailed.
+As this factor rises, you will see more energy flow into the battery. Eventually the battery will be full and more energy will be curtailed. The limit on this slider is set roughly to the ISP limit in 2050 for the region. 
+
+For example, the GWs of wind and solar power in QLD in 2050, according to the ISP, is about 5.44 times the
+current level. By which I mean the sum of wind and power GW in 2050 is 5.44 times the sum today. But the ratio
+may not be the same, and the ratio of rooftop to utility solar can also vary considerably between regions.
 
 ### Slider: Baseload size (MW) 
 
 You can test the impact of having a baseload energy source on the amount of overbuild and batteries you
 need to eliminate shortfall. Having a baseload source also reduces the need for interconnections and
-peaking gas plants.
+peaking gas plants. In NSW and QLD, it makes sense to consider the pumped hydo systems of
+Snowy 2.0 and Borumba as baseload sources; Snowy 2.0 could supply 2GW as 
+baseload for 174 days, while Borumba can supply 2GW as baseload for 24 days. Neither would do this given current
+market rules. But suspensions of the market and direction by AEMO will increase as the penetration of wind
+and solar increases; as demonstrated by the frequent and growing market interventions in SA as wind and solar
+penetration have increased.
 
 ### Slider: Baseload multiplier 
 
