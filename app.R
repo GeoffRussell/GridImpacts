@@ -382,6 +382,8 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 #-----------------------------------------------------------------
 # Constants 
 #-----------------------------------------------------------------
+# grid50 and house50 are MWh of batteries in isp.
+#-----------------------------------------------------------------
 storTable<-tribble(
   ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,~Wind2050,~Solar2050, ~Wind2024, ~Solar2024, ~grid50,~house50,
   "NSW",  108000,   22000,    2000,       0, 2400,      20,      50,           2.8,       12.4,    52520, 55974,         
