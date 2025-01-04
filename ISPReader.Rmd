@@ -134,6 +134,16 @@ plotStorGWh(cdp3storMWh,"NEM",redStorTypes,"without Borumba/Snowy2.0\n","-noph")
 ```
 
 ```{r}
+dfstorage<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> 
+  mutate(year=year(ymd(Year))) |> 
+  group_by(year,Region,WhoOwns) |> summarise(totalGWh=sum(GWh)) |> filter(year==2050)
+write_csv(dfstorage,"storagebyowner.csv")
+dfstorage<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes()  |>  mutate(year=year(ymd(Year))) |> filter(year==2050)
+write_csv(dfstorage,"storagebyownerall.csv")
+```
+
+```{r}
+  
 p<-cdp3storMWh |> filter(Technology %in% redStorTypes) |> combineStorageTypes() |> 
   ggplot()+geom_col(aes(x=Year,y=GWh,fill=WhoOwns),position="stack") +
   labs(x="",title=paste0("Regional Storage by year mainland NEM\n(Without Borumba/Snowy2.0)\n(Very little in Tasmania)\nData: AEMO/ISP2024 (CDP3)")) +
