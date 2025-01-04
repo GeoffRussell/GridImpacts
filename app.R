@@ -476,6 +476,24 @@ ui <- function(request) {
                                            )
                                          )
                                 ),
+                                tabPanel("Costings",
+                                         fluidRow(
+                                           sliderInput("battLifespan",label="Household battery lifespan",min=10,max=25,step=1,value=10),
+                                           sliderInput("windLifespan",label="Wing farm lifespan",min=25,max=35,step=5,value=25),
+                                           sliderInput("nuclearLifespan",label="Nuclear lifespan",min=40,max=80,step=10,value=60),
+                                           bsTooltip("battLifespan","The current Aurecon/CSIRO Gencost battery lifespan is estimated at 10 years",placement="top",trigger="hover"),
+                                           sliderInput("homeBattCost",label="Household battery cost ($/kwh)",min=500,max=722,step=30,value=722),
+                                           sliderInput("gridBattCost",label="Utility battery cost ($/kwh)",min=242,max=592,step=10,value=592),
+                                           sliderInput("windCost",label="Onshore wind cost ($/kw)",min=1763,max=2931,step=30,value=2931),
+                                           sliderInput("solarCost",label="Solar cost ($/kw)",min=583,max=1526,step=30,value=1526),
+                                           bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover"),
+                                           sliderInput("baseloadCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=8655,step=500,value=8655),
+                                           bsTooltip("baseloadCost","The current CSIRO Gencost nuclear cost is estimated at $8655/kw",placement="top",trigger="hover"),
+                                           column(width=12,
+                                                  gt_output("calccosts"),
+                                           )
+                                         )
+                                ),
                                 tabPanel("Quick Start",
                                          markdownFile("ob2.txt")
                                 ),
@@ -515,10 +533,13 @@ server <- function(ui,input, output,session) {
                 axis.text=element_text(face="bold",size=12))+mtheme
 #    runjs('$("#mainPanel").css("width", "1200px");')
     
-    v<-reactiveValues(ofac=1)
-    observeEvent(input$ofac,{
-      v$ofac=input$ofac
-    })
+    v<-reactiveValues(ofac=1,bsize=0)
+    observeEvent(input$ofac,{ v$ofac=input$ofac })
+    observeEvent(input$bsize,{ v$bsize=input$bsize })
+    observeEvent(input$bmult,{ v$bmult=input$bmult })
+    observeEvent(input$baseloadsize,{ v$baseloadsize=input$baseloadsize })
+    observeEvent(input$blmult,{ v$blmult=input$blmult })
+    
     observeEvent(input$datasetpick,{
       #print(paste0("OE1: ",input$datasetpick))
       v$datasetpick=input$datasetpick
@@ -547,6 +568,40 @@ server <- function(ui,input, output,session) {
         tags$div(
           p("The 8 hour column gives the highest amount of wind energy in any 8 hour period as will as the lowest in any 8 hour period. Similarly for the other periods, 5 minutes and 1 hour.")
         )
+    })
+    output$calccosts <- render_gt({
+        dfsum<-gendfsum()
+        nperiods<-length(dfsum$Time)
+        st<-getState(v$datasetpick)
+        row<-storTableCalc |> filter(State==st)
+        ofac=v$ofac
+        # what do we need to build?
+        wind=(ofac-1)*row$Wind2024
+        solar=(ofac-1)*row$Solar2024
+        batt=v$bsize-row$Value
+        batthome=batt*(row$house50/(row$grid50+row$house50))
+        battgrid=batt*(row$grid50/(row$grid50+row$house50))
+        
+        nwfac=input$nuclearLifespan/input$windLifespan
+        hbfac=input$nuclearLifespan/input$battLifespan
+        
+        total= wind*input$windCost + solar*input$solarCost + batthome*input$homeBattCost/1e3 + battgrid*input$gridBattCost/1e3 
+        lspantotal= wind*input$windCost*nwfac + solar*input$solarCost + batthome*input$homeBattCost/1e3*hbfac + battgrid*input$gridBattCost/1e3*hbfac 
+          
+        df<-tribble(
+          ~Building,~Units,~Value,~Cost,~LifetimeCost,
+          "","","","$m","$m",
+          "Wind",    "GW",  comma(wind), comma(wind*input$windCost), comma(wind*input$windCost*nwfac),
+          "Solar",    "GW",  comma(solar), comma(solar*input$solarCost), " ", 
+          "Home Batteries",    "MWh",  comma(batthome), comma(batthome*input$homeBattCost/1e3), comma(batthome*input$homeBattCost*hbfac/1e3),
+          "Utility Batteries",    "MWh",  comma(battgrid), comma(battgrid*input$gridBattCost/1e3),comma(battgrid*input$gridBattCost*hbfac/1e3),
+          "TOTAL ",    "$",  "", comma(total),comma(lspantotal)
+        )
+        df |> gt() |> cols_align(columns=c("LifetimeCost","Cost"),align="right") |> tab_header(title="Build costs") |> tab_options(table.width=pct(100),
+                                                                           table.background.color=tbgcolor,
+                                                                           table.font.color=tfgcolor,
+                                                                        column_labels.hidden=T,heading.align="left")
+        
     })
     output$calcparmsexp <- renderUI({
         tags$div(
