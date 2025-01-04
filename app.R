@@ -524,8 +524,10 @@ server <- function(ui,input, output,session) {
       v$state=st
       row<-storTableCalc |> filter(State==st)
       #print(paste0("OE1: ",stor))
-      updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize,value=row$Value)
-      updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1,value=ifelse(v$ofac<=row$ofac,v$ofac,1))
+      #updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize,value=row$Value)
+      #updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1,value=ifelse(v$ofac<=row$ofac,v$ofac,1))
+      updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize)
+      updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1)
     })
     gendfsum<-reactive({
       print(input$datasetpick)
@@ -617,12 +619,15 @@ server <- function(ui,input, output,session) {
         dfsum<-gendfsum()
         nperiods<-length(dfsum$Time)
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
+        st<-getState(v$datasetpick)
+        row<-storTableCalc |> filter(State==st)
         
         df<-tibble(
-          `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size","Gas Peaking"),
+          `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size","Gas Peaking","GW per overbuild unit"),
           `Value`=c(input$datasetpick,paste0(comma((nperiods/12)/24)," days"),comma(input$ofac),paste0(comma(input$blmult*input$baseloadsize)," MW"),
           paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(periodAvgDemand*1e9))," hrs)"),
-                 paste0(comma(input$gaspeak*input$gasmult)," GW")
+                 paste0(comma(input$gaspeak*input$gasmult)," GW"),
+          paste0(comma(row$Solar2024+row$Wind2024)," GW - Solar(",comma(row$Solar2024),") Wind(",comma(row$Wind2024),")")
           )
         )
         df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100),
