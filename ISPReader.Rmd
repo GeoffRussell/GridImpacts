@@ -85,7 +85,7 @@ nullfilter <- function(.data) {
   .data 
 }
 dfcsv<-read_excel(paste0(dir,fle),sheet="Storage Energy",skip=2) |> filter(CDP=="CDP3") 
-write_csv(dfcsv,"isp2024-cdp3-stor-gwh.csv")
+#write_csv(dfcsv,"isp2024-cdp3-stor-gwh.csv")
 ```
 
 ```{r}
