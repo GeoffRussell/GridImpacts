@@ -478,17 +478,27 @@ ui <- function(request) {
                                 ),
                                 tabPanel("Costings",
                                          fluidRow(
+                                           column(width=4,
                                            sliderInput("battLifespan",label="Household battery lifespan",min=10,max=25,step=1,value=10),
-                                           sliderInput("windLifespan",label="Wing farm lifespan",min=25,max=35,step=5,value=25),
-                                           sliderInput("nuclearLifespan",label="Nuclear lifespan",min=40,max=80,step=10,value=60),
-                                           bsTooltip("battLifespan","The current Aurecon/CSIRO Gencost battery lifespan is estimated at 10 years",placement="top",trigger="hover"),
+                                           sliderInput("gbattLifespan",label="Grid battery lifespan",min=10,max=25,step=1,value=15),
+                                           sliderInput("windLifespan",label="Wind farm lifespan",min=25,max=35,step=5,value=25),
+                                           sliderInput("solarLifespan",label="PV lifespan",min=15,max=35,step=5,value=25),
+                                           bsTooltip("battLifespan","The current Aurecon/CSIRO Gencost battery lifespan is estimated at 10 years",placement="top",trigger="hover")
+                                           ),
+                                           column(width=4,
                                            sliderInput("homeBattCost",label="Household battery cost ($/kwh)",min=500,max=722,step=30,value=722),
                                            sliderInput("gridBattCost",label="Utility battery cost ($/kwh)",min=242,max=592,step=10,value=592),
                                            sliderInput("windCost",label="Onshore wind cost ($/kw)",min=1763,max=2931,step=30,value=2931),
                                            sliderInput("solarCost",label="Solar cost ($/kw)",min=583,max=1526,step=30,value=1526),
-                                           bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover"),
-                                           sliderInput("baseloadCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=8655,step=500,value=8655),
-                                           bsTooltip("baseloadCost","The current CSIRO Gencost nuclear cost is estimated at $8655/kw",placement="top",trigger="hover"),
+                                           bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover")
+                                           ),
+                                           column(width=4,
+                                           sliderInput("nukeCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=8655,step=500,value=8655),
+                                           bsTooltip("nukeCost","The current CSIRO Gencost nuclear cost is estimated at $8655/kw",placement="top",trigger="hover"),
+                                           sliderInput("nukeLifespan",label="Nuclear lifespan",min=40,max=80,step=10,value=60)
+                                           )
+                                         ),
+                                         fluidRow(
                                            column(width=12,
                                                   gt_output("calccosts"),
                                            )
@@ -585,22 +595,28 @@ server <- function(ui,input, output,session) {
         nwfac=input$nuclearLifespan/input$windLifespan
         hbfac=input$nuclearLifespan/input$battLifespan
         
-        total= wind*input$windCost + solar*input$solarCost + batthome*input$homeBattCost/1e3 + battgrid*input$gridBattCost/1e3 
-        lspantotal= wind*input$windCost*nwfac + solar*input$solarCost + batthome*input$homeBattCost/1e3*hbfac + battgrid*input$gridBattCost/1e3*hbfac 
+        bl=input$baseloadsize*input$blmult
           
         df<-tribble(
-          ~Building,~Units,~Value,~Cost,~LifetimeCost,
-          "","","","$m","$m",
-          "Wind",    "GW",  comma(wind), comma(wind*input$windCost), comma(wind*input$windCost*nwfac),
-          "Solar",    "GW",  comma(solar), comma(solar*input$solarCost), " ", 
-          "Home Batteries",    "MWh",  comma(batthome), comma(batthome*input$homeBattCost/1e3), comma(batthome*input$homeBattCost*hbfac/1e3),
-          "Utility Batteries",    "MWh",  comma(battgrid), comma(battgrid*input$gridBattCost/1e3),comma(battgrid*input$gridBattCost*hbfac/1e3),
-          "TOTAL ",    "$",  "", comma(total),comma(lspantotal)
+          ~Technology,                    ~Requirement,   ~Hide,                                  ~Cost,            ~"Life span",
+          "Wind",                                wind,    "",                 wind*input$windCost,    input$windLifespan,
+          "Solar",                              solar,    "",               solar*input$solarCost,    input$solarLifespan, 
+          "Home Batteries",                 batthome,     "",      batthome*input$homeBattCost/1e3,   input$battLifespan, 
+          "Utility Batteries",              battgrid,     "",      battgrid*input$gridBattCost/1e3,      input$gbattLifespan,
+          "Nuclear as baseload",                bl,       "",                        bl*input$nukeCost/1e3,       input$nukeLifespan
         )
-        df |> gt() |> cols_align(columns=c("LifetimeCost","Cost"),align="right") |> tab_header(title="Build costs") |> tab_options(table.width=pct(100),
-                                                                           table.background.color=tbgcolor,
-                                                                           table.font.color=tfgcolor,
-                                                                        column_labels.hidden=T,heading.align="left")
+        
+        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost) 
+        totalCost<-as.numeric(dfout |> summarise(sum(Cost)))
+        lifespanCost<-as.numeric(dfout |> summarise(sum(`Lifetime Cost`)))
+        dft<-tribble(
+          ~Technology,                    ~Hide,                                  ~Cost,            ~"Lifetime Cost",
+          "",                                 "Total",                             totalCost, lifespanCost
+        )
+        bind_rows(dfout,dft) |> gt() |> cols_align(columns=c("Cost"),align="right") |> tab_header(title="Build costs") |> 
+          tab_options(table.width=pct(100), table.background.color=tbgcolor,
+                              table.font.color=tfgcolor,
+                              column_labels.hidden=F,heading.align="left")
         
     })
     output$calcparmsexp <- renderUI({
