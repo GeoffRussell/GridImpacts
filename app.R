@@ -411,7 +411,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.95)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.96)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -437,7 +437,7 @@ ui <- function(request) {
                                            column(width=4,
                                                   sliderInput("ofac",label="Overbuild factor",min=1,max=6,step=0.25,value=1),
                                                   bsTooltip("ofac","Increase current level of wind+solar by this factor, limit is set at 2050 ISP level for region",placement="top",trigger="hover"),
-                                                  sliderInput("bsize",label="Battery size in MWh", min=500,max=50000,step=500,value=500),
+                                                  sliderInput("bsize",label="Battery size in MWh", min=500,max=300000,step=500,value=500),
                                                   sliderInput("bmult",label="Battery multiplier", min=1,max=10,step=1,value=1),
                                                   bsTooltip("bsize","Energy capacity of magic battery, limit is ISP region max in 2050",placement="top",trigger="hover")
                                            ),
