@@ -36,6 +36,19 @@ cdp3<-read_csv(ispfile)
 cdpsa<-cdp3 |> filter(Region=="SA")
 
 
+#-----------------------------------------------------
+# Nuclear lifespan costs 
+#-----------------------------------------------------
+# ... based on US DOE Lift report
+# f30<-1000*24*365*0.9*30*c(50,150)/1e9
+# > l50<-1000*24*365*0.9*50*32/1e9
+# > f30+l50
+# [1] 24.4404 48.0924
+# > (f30+l50)/10
+# [1] 2.44404 4.80924
+# > l30<-1000*24*365*0.9*30*32/1e9
+# > (f30+l30)/10
+# [1] 1.939464 4.304664
 
 #-----------------------------------------------------
 # Datasets
@@ -476,7 +489,7 @@ ui <- function(request) {
                                            )
                                          )
                                 ),
-                                tabPanel("Costings",
+                                tabPanel("Costs",
                                          fluidRow(
                                            column(width=4,
                                            sliderInput("battLifespan",label="Household battery lifespan",min=10,max=25,step=1,value=10),
