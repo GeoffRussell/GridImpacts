@@ -18,8 +18,8 @@ library(bsicons)
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 comma3<-function(x) prettyNum(signif(x,digits=3),big.mark=",")
 markdownFile<-function(filename) {
-  t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
-  #t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
+  #t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
+  t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
   markdown(t)
 }
 options(scipen=999)
@@ -503,6 +503,7 @@ ui <- function(request) {
                                          fluidRow(
                                            column(width=12,
                                                   gt_output("calccosts"),
+                                                  includeMarkdown("costs1.txt")
                                            )
                                          )
                                 ),
