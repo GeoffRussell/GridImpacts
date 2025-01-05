@@ -477,7 +477,9 @@ ui <- function(request) {
                                          )
                                 ),
                                 tabPanel("Quick Start",
-                                         markdownFile("ob2.txt")
+                                         markdownFile("ob2.txt"),
+                                         fluidRow(align="center",imageOutput("costs",height=400)),
+                                         markdownFile("ob2b.txt")
                                 ),
                                 tabPanel("Details",
                                          markdownFile("ob0.txt"),
@@ -539,6 +541,7 @@ server <- function(ui,input, output,session) {
       bstatus
     })
 
+    output$costs<-renderImage(list(src="NEMWholeSaleRetail2018Q3-2024Q3.png",height=400),deleteFile=FALSE)
     output$weekpng<-renderImage(list(src="WeekEnding30-11-2023.png",height=400),deleteFile=FALSE)
     output$NEMstor1<-renderImage(list(src="ByStateStorageMWh-ISPCDP3.png",height=400),deleteFile=FALSE)
     output$NEMstor2<-renderImage(list(src="ByStateStorageMWh-noph-ISPCDP3.png",height=400),deleteFile=FALSE)
