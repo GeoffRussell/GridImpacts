@@ -1,8 +1,11 @@
 
-## Nuclear lifetime costs
+
+
+
+## Nuclear: Lifetime costs
 
 The US Department of Energy recently released a report on the US nuclear industry in the context of
-the joint statement by over 30 countries to triple the global nuclear power capacity. Among other things it
+the joint statement by over 30 countries to triple the global nuclear power capacity by 2050. Among other things it
 considered the impacts of including nuclear power in a predominantly renewable grid.
 
 
@@ -12,8 +15,31 @@ It found that nuclear reduces the costs of such a grid. Here's an image which sh
 
 How does nuclear reduce costs? 
 
-By reducing intermittency and  the total amount of stuff you need to build. Again, here's
-a figure showing the situation with reference to the US grid. The US grid currently gets about 20% of
+It's pretty obvious when you think about it.  The problems for wind and solar are still nights, and runs of still 
+nights. Solving those requires a vast mining effort for critical minerals for batteries and thousands of kilometres
+of extra transmission to move energy from where you harvest it to where you need it. 
+
+Here's a plot of South Australian demand and wind power during the first week of June 2024. 
+
+![](wind-sa-june-1st-week.png){style="width: 100%; margin: auto;"}
+
+You can see the problem. When the wind is blowing SA has more than enough wind power to meet all the state's demand, but during this week we'd have gone dark without gas and Victorian coal. 
+
+Stick a gigawatt of baseload into the SA grid (as two 500MW reactors) and your problems are greatly reduced. 
+
+![](wind-sa-june-1st-week-mod.png){style="width: 100%; margin: auto;"}
+
+So it's now blindingly obvious that you will now need far less stuff (batteries/transmission/pumped hydro) to keep you
+grid supplied.
+
+But what isn't obvious is whether the price you pay for that baseload is cheaper than the savings you make
+by needing less stuff. You need a bit more analysis to work that out; but not much. GridImpacts can
+determine which is cheaper, even if it isn't doesn't have all the bells and whistles of a professional modelling
+tool. I have deliberately chosen to keep GridImpacts simple and to make every assumption transparently obvious. 
+
+
+The US DOE report gives a figure showing the financial situation with reference to the US grid. 
+The US grid currently gets about 20% of
 electricity with nuclear and costs will go down if they can double this.
 
 ![](liftoff-fig7-firmingwithnuclear.png){style="width: 100%; margin: auto;"}
@@ -22,13 +48,13 @@ The report also gave estimates of the total cost of electricity from a nuclear p
 
 ![](liftoff-fig31-lifespan.png){style="width: 100%; margin: auto;"}
 
-I have used the findings of this image to estimate a rough multiplier of about 3 to get the total cost
-of a nuclear plant over a 60 year lifespan relative to the capital cost. The estimate is simple,  just
+I have used the data from this image to estimate a rough multiplier of about 3 to get the total cost
+of a nuclear plant over a 60 year lifespan relative to the capital cost. Deriving this estimate is simple,  just
 multiply the estimate of $50-$150/MWh by the total number of MWh produced by US reactors (which typically
 have a 90% capacity factor and add in the $30/MWh over the remaining period. 
 
-Play around with GridImpacts and you'll soon find that the DOE results are really pretty obvious. The details
-and exact numbers are complex, but the nature of the outcome is clear. 
+Play around with GridImpacts and you'll soon find that the DOE results are qualitatively obvious. The details
+of exactly how much money nuclear saves are complex, but that it will save money isn't. 
 
 
 
