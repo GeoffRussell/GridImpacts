@@ -493,10 +493,11 @@ ui <- function(request) {
                                            bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover")
                                            ),
                                            column(width=4,
-                                           sliderInput("nukeCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=8655,step=500,value=8655),
+                                           sliderInput("nukeCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=12000,step=500,value=8655),
                                            bsTooltip("nukeCost","The current CSIRO Gencost nuclear cost is estimated at $8655/kw",placement="top",trigger="hover"),
                                            sliderInput("nukeLifespan",label="Nuclear lifespan",min=40,max=80,step=10,value=60),
-                                           bsTooltip("nukeLifespan","O&M and fuel costs of a (large) nuclear plant are a few percent of the capital costs",placement="top",trigger="hover")
+                                           sliderInput("nukeOps",label="Lifespan nuclear operating costs",min=1.5,max=6,value=c(1.9,4.3)),
+                                           bsTooltip("nukeOps","Total cost range over 80 years (based on US DOE)",placement="top",trigger="hover")
                                            )
                                          ),
                                          fluidRow(
@@ -599,19 +600,19 @@ server <- function(ui,input, output,session) {
         bl=input$baseloadsize*input$blmult
           
         df<-tribble(
-          ~Technology,                    ~Requirement,       ~Units,                           ~Cost,            ~"Life span",
-          "Wind ",                                wind,   "GW",                  wind*input$windCost,    input$windLifespan,
-          "Solar ",                              solar,   "GW",                solar*input$solarCost,    input$solarLifespan, 
-          "Home Batteries ",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan, 
-          "Utility Batteries ",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,
-          "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan
+          ~Technology,                    ~Requirement,       ~Units,                           ~Cost,            ~"Life span",   ~OAndMFac,
+          "Wind ",                                wind,   "GW",                  wind*input$windCost,    input$windLifespan,          0,
+          "Solar ",                              solar,   "GW",                solar*input$solarCost,    input$solarLifespan,         0,
+          "Home Batteries ",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
+          "Utility Batteries ",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
+          "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     2
         )
         
-        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost) 
+        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost+`OAndMFac`*Cost) 
         
         dfout |> gt(rowname_col="Technology") |> 
           cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
-          tab_header(title="Build costs over 60 years") |>  # tab_row_group(label=" ",rows=c(1,2,3)) |>
+          tab_header(title="Build costs over 60 years") |>  
           cols_label("Units"="",Requirement="") |>
           grand_summary_rows(columns=c("Cost","Lifetime Cost"),fns=list(label="Total $m")~sum(.)) |>
           tab_options(table.width=pct(100), table.background.color=tbgcolor,
