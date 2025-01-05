@@ -598,22 +598,18 @@ server <- function(ui,input, output,session) {
         bl=input$baseloadsize*input$blmult
           
         df<-tribble(
-          ~Technology,                    ~Requirement,   ~Hide,                                  ~Cost,            ~"Life span",
-          "Wind",                                wind,    "",                 wind*input$windCost,    input$windLifespan,
-          "Solar",                              solar,    "",               solar*input$solarCost,    input$solarLifespan, 
-          "Home Batteries",                 batthome,     "",      batthome*input$homeBattCost/1e3,   input$battLifespan, 
-          "Utility Batteries",              battgrid,     "",      battgrid*input$gridBattCost/1e3,      input$gbattLifespan,
-          "Nuclear as baseload",                bl,       "",                        bl*input$nukeCost/1e3,       input$nukeLifespan
+          ~Technology,                    ~Requirement,                                  ~Cost,            ~"Life span",
+          "Wind (GW)",                                wind,                     wind*input$windCost,    input$windLifespan,
+          "Solar (GW)",                              solar,                   solar*input$solarCost,    input$solarLifespan, 
+          "Home Batteries (MWh)",                 batthome,           batthome*input$homeBattCost/1e3,   input$battLifespan, 
+          "Utility Batteries (MWh)",              battgrid,           battgrid*input$gridBattCost/1e3,      input$gbattLifespan,
+          "Nuclear as baseload (GW)",                bl,                        bl*input$nukeCost/1e3,       input$nukeLifespan
         )
         
         dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost) 
-        totalCost<-as.numeric(dfout |> summarise(sum(Cost)))
-        lifespanCost<-as.numeric(dfout |> summarise(sum(`Lifetime Cost`)))
-        dft<-tribble(
-          ~Technology,                    ~Hide,                                  ~Cost,            ~"Lifetime Cost",
-          "",                                 "Total",                             totalCost, lifespanCost
-        )
-        bind_rows(dfout,dft) |> gt() |> cols_align(columns=c("Cost"),align="right") |> tab_header(title="Build costs") |> 
+        dfout |> gt(rowname_col="Technology") |> cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
+          tab_header(title="Build costs") |>  # tab_row_group(label=" ",rows=c(1,2,3)) |>
+          grand_summary_rows(columns=c("Cost","Lifetime Cost"),fns=list(label="Total $m")~sum(.)) |>
           tab_options(table.width=pct(100), table.background.color=tbgcolor,
                               table.font.color=tfgcolor,
                               column_labels.hidden=F,heading.align="left")
