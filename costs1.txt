@@ -1,0 +1,35 @@
+
+## Nuclear lifetime costs
+
+The US Department of Energy recently released a report on the US nuclear industry in the context of
+the joint statement by over 30 countries to triple the global nuclear power capacity. Among other things it
+considered the impacts of including nuclear power in a predominantly renewable grid.
+
+
+It found that nuclear reduces the costs of such a grid. Here's an image which shows what they expect. 
+
+![](liftoff-fig6-firmingwithnuclear.png){style="width: 100%; margin: auto;"}
+
+How does nuclear reduce costs? 
+
+By reducing intermittency and  the total amount of stuff you need to build. Again, here's
+a figure showing the situation with reference to the US grid. The US grid currently gets about 20% of
+electricity with nuclear and costs will go down if they can double this.
+
+![](liftoff-fig7-firmingwithnuclear.png){style="width: 100%; margin: auto;"}
+
+The report also gave estimates of the total cost of electricity from a nuclear plant over an 80 year lifespan.
+
+![](liftoff-fig31-lifespan.png){style="width: 100%; margin: auto;"}
+
+I have used the findings of this image to estimate a rough multiplier of about 3 to get the total cost
+of a nuclear plant over a 60 year lifespan relative to the capital cost. The estimate is simple,  just
+multiply the estimate of $50-$150/MWh by the total number of MWh produced by US reactors (which typically
+have a 90% capacity factor and add in the $30/MWh over the remaining period. 
+
+Play around with GridImpacts and you'll soon find that the DOE results are really pretty obvious. The details
+and exact numbers are complex, but the nature of the outcome is clear. 
+
+
+
+
