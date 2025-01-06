@@ -396,14 +396,15 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
 # Constants 
 #-----------------------------------------------------------------
 # grid50 and house50 are MWh of batteries in isp.
+# NB. Solar2050 is total solar in 2050, rtSolar2050 is the rooftop component
 #-----------------------------------------------------------------
 storTable<-tribble(
-  ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,~Wind2050,~Solar2050, ~Wind2024, ~Solar2024, ~grid50,~house50,
-  "NSW",  108000,   22000,    2000,       0, 2400,      20,      50,           2.8,       12.4,    52520, 55974,         
-  "QLD",  53000,   15000,    1000,       0, 1700,      21,      47,           2.5,         10,     13773, 39555,
-  "SA",  16000,    4700,      500,       0,  500,       6,      14,           2.6,        3.4,     3002,  12934,
-  "NEM",  228000,  57000,    4500,       0, 6200,      68,     141,            13,         33,     74000, 154000, 
-  "VIC",  50000,   13000,    1000,       0, 1150,      18,      31,           4.5,          7,     5.04,  45.226
+  ~State,~MaxSize,~MaxPower,~Step,~MinSize,~Value,~Wind2050, ~Solar2050, ~rtSolar2050, ~Wind2024, ~Solar2024, ~grid50,~house50,
+  "NEM",  228000,  57000,    4500,       0, 6200,      68,     144,      85.7,      13,         33,     74000, 154000, 
+  "NSW",  108000,   22000,    2000,       0, 2400,      20,    50.1,     28.8,     2.8,       12.4,    52520, 55974,         
+  "QLD",  53000,   15000,    1000,       0, 1700,      21,     47.2,     23.0,     2.5,         10,     13773, 39555,
+  "SA",  16000,    4700,      500,       0,  500,       6,     13.6,      8.4,     2.6,        3.4,     3002,  12934,
+  "VIC",  50000,   13000,    1000,       0, 1150,      18,     31.4,     23.8,     4.5,          7,     5.04,  45.226
 )
 storTableCalc<-storTable |> mutate(ofac=(Wind2050+Solar2050)/(Wind2024+Solar2024))
 print(storTableCalc)
@@ -426,7 +427,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.97+costs)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.98+costs)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -493,17 +494,17 @@ ui <- function(request) {
                                          fluidRow(
                                            column(width=4,
                                            sliderInput("battLifespan",label="Household battery lifespan",min=10,max=25,step=1,value=10),
-                                           sliderInput("gbattLifespan",label="Grid battery lifespan",min=10,max=25,step=1,value=15),
+                                           sliderInput("gbattLifespan",label="Grid battery lifespan",min=10,max=25,step=1,value=20),
                                            sliderInput("windLifespan",label="Wind farm lifespan",min=25,max=35,step=5,value=25),
-                                           sliderInput("solarLifespan",label="PV lifespan",min=15,max=35,step=5,value=25),
+                                           sliderInput("solarLifespan",label="PV lifespan",min=15,max=35,step=5,value=30),
                                            sliderInput("gasLifespan",label="Gas lifespan",min=25,max=40,step=5,value=30),
                                            bsTooltip("battLifespan","The current Aurecon/CSIRO Gencost battery lifespan is estimated at 10 years",placement="top",trigger="hover")
                                            ),
                                            column(width=4,
                                            sliderInput("homeBattCost",label="Household battery cost ($/kwh)",min=500,max=722,step=30,value=722),
-                                           sliderInput("gridBattCost",label="Utility battery cost ($/kwh)",min=242,max=592,step=10,value=592),
-                                           sliderInput("windCost",label="Onshore wind cost ($/kw)",min=1763,max=2931,step=30,value=2931),
-                                           sliderInput("solarCost",label="Solar cost ($/kw)",min=583,max=1526,step=30,value=1526),
+                                           sliderInput("gridBattCost",label="Utility battery cost ($/kwh)",min=242,max=592,step=10,value=400),
+                                           sliderInput("windCost",label="Onshore wind cost ($/kw)",min=1763,max=2931,step=30,value=2400),
+                                           sliderInput("solarCost",label="Solar cost ($/kw)",min=583,max=1526,step=30,value=1250),
                                            bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover"),
                                            sliderInput("gasCost",label="Gas peaker cost ($/kw)",min=830,max=5000,step=400,value=1059),
                                            bsTooltip("gasCost","The upper limit is with CCS (carbon capture and storage)",placement="top",trigger="hover")
@@ -607,6 +608,7 @@ server <- function(ui,input, output,session) {
         nperiods<-length(dfsum$Time)
         st<-getState(v$datasetpick)
         row<-storTableCalc |> filter(State==st)
+        rtfraction<-row$rtSolar2050/row$Solar2050
         ofac=v$ofac
         # what do we need to build?
         wind=(ofac-1)*row$Wind2024
@@ -621,26 +623,33 @@ server <- function(ui,input, output,session) {
         
         bl=input$baseloadsize*input$blmult
         gaspk<-input$gaspeak*input$gasmult
+        rtsolar=solar*rtfraction
+        usolar=solar*(1-rtfraction)
         
         df<-tribble(
           ~Technology,                    ~Requirement,       ~Units,                           ~Cost,            ~"Life span",   ~OAndMFac,
-          "Wind ",                                wind,   "GW",                  wind*input$windCost,    input$windLifespan,          0,
-          "Solar ",                              solar,   "GW",                solar*input$solarCost,    input$solarLifespan,         0,
-          "Home Batteries ",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
-          "Utility Batteries ",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
-          "Gas peaker ",                          gaspk,   "GW",                gaspk*input$gasCost,       input$gasLifespan,         2.15,
-          "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     input$nukeOps
+          "Home batteries",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
+          "Rooftop solar",                           rtsolar,   "GW",                rtsolar*input$solarCost,    input$solarLifespan,         0,
+          "Utility solar",                     usolar,   "GW",                usolar*input$solarCost,    input$solarLifespan,         0,
+          "Wind",                                wind,   "GW",                  wind*input$windCost,    input$windLifespan,          0,
+          "Utility Batteries",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
+          "Gas peaker",                          gaspk,   "GW",                gaspk*input$gasCost,       input$gasLifespan,         1.15,
+          "Nuclear as baseload",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     input$nukeOps-1
         )
         
-        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost+(`OAndMFac`-1)*Cost) 
+        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost+(`OAndMFac`*Cost)) 
+        home<-as.numeric(dfout |> filter(Technology %in% c("Home batteries","Rooftop solar")) |> summarise(hometotal=sum(`Lifetime Cost`)))
+        all<-as.numeric(dfout |> summarise(rest=sum(`Lifetime Cost`)))
+        govcost=all-home
         
         dfout |> gt(rowname_col="Technology") |> 
           cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
           tab_footnote(footnote="Gas lifetime fuel use is estimated assuming a 10% capacity factor") |>
           tab_footnote(footnote="Home battery costs are ignored by AEMO/ISP/CSIRO/Government in all costings despite being essential") |>
+          tab_footnote(footnote=paste0("Cost minus rooftop solar and home batteries $",comma(govcost),"m")) |>
           tab_header(title=paste0("Build costs over ",input$nukeLifespan," years")) |>  
-          cols_label("Units"="",Requirement="","Cost"="Cost ($m)","Lifetime Cost"="Lifetime cost ($m)") |> 
-          fmt_integer(columns=c("Cost","Lifetime Cost")) |>
+          cols_label("Units"="",Requirement="Required","Cost"="Cost ($m)","Lifetime Cost"="Lifetime cost ($m)") |> 
+          fmt_integer(columns=c("Cost","Lifetime Cost","Requirement")) |>
           fmt_number(columns=c("Build Times")) |>
           grand_summary_rows(columns=c("Cost","Lifetime Cost"),fns=list(label="Total $m")~sum(.),fmt=~fmt_integer(.)) |>
           tab_options(table.width=pct(100), table.background.color=tbgcolor,
