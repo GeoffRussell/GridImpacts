@@ -509,12 +509,13 @@ ui <- function(request) {
                                            sliderInput("nukeCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=12000,step=500,value=8655),
                                            bsTooltip("nukeCost","The current CSIRO Gencost nuclear cost is estimated at $8655/kw",placement="top",trigger="hover"),
                                            sliderInput("nukeLifespan",label="Nuclear lifespan",min=40,max=80,step=10,value=60),
-                                           sliderInput("nukeOps",label="Lifespan nuclear operating costs",min=1.5,max=6,value=c(1.9,4.3)),
-                                           bsTooltip("nukeOps","Total cost range over 80 years (based on US DOE)",placement="top",trigger="hover")
+                                           sliderInput("nukeOps",label="Lifespan nuclear cost factor",min=2,max=4.5,value=3),
+                                           bsTooltip("nukeOps","Total lifetime cost factor (US DOE 1.9-4.3 x capacity cost over 80 years)",placement="top",trigger="hover")
                                            )
                                          ),
                                          fluidRow(
                                            column(width=12,
+                                                  gt_output("calcparms2"),
                                                   gt_output("calccosts"),
                                                   includeMarkdown("costs1.txt")
                                            )
@@ -615,23 +616,23 @@ server <- function(ui,input, output,session) {
         hbfac=input$nuclearLifespan/input$battLifespan
         
         bl=input$baseloadsize*input$blmult
-          
+        
         df<-tribble(
           ~Technology,                    ~Requirement,       ~Units,                           ~Cost,            ~"Life span",   ~OAndMFac,
           "Wind ",                                wind,   "GW",                  wind*input$windCost,    input$windLifespan,          0,
           "Solar ",                              solar,   "GW",                solar*input$solarCost,    input$solarLifespan,         0,
           "Home Batteries ",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
           "Utility Batteries ",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
-          "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     2
+          "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     input$nukeOps
         )
         
         dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost+`OAndMFac`*Cost) 
         
         dfout |> gt(rowname_col="Technology") |> 
           cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
-          tab_header(title="Build costs over 60 years") |>  
-          cols_label("Units"="",Requirement="") |>
-          grand_summary_rows(columns=c("Cost","Lifetime Cost"),fns=list(label="Total $m")~sum(.)) |>
+          tab_header(title=paste0("Build costs over ",input$nukeLifespan," years")) |>  
+          cols_label("Units"="",Requirement="","Cost"="Cost ($m)","Lifetime Cost"="Lifetime cost ($m)") |> fmt_integer(columns=c("Cost","Lifetime Cost")) |>
+          grand_summary_rows(columns=c("Cost","Lifetime Cost"),fns=list(label="Total $m")~sum(.),fmt=~fmt_integer(.)) |>
           tab_options(table.width=pct(100), table.background.color=tbgcolor,
                               table.font.color=tfgcolor,
                               column_labels.hidden=F,heading.align="left")
@@ -722,6 +723,27 @@ server <- function(ui,input, output,session) {
           )
         )
         df |> gt() |> tab_header(title="Slider parameters") |> tab_options(table.width=pct(100),
+                                                                           table.background.color=tbgcolor,
+                                                                           table.font.color=tfgcolor,
+                                                                           column_labels.hidden=T,heading.align="left")
+    })
+    output$calcparms2 <- render_gt({
+        dfsum<-gendfsum()
+        nperiods<-length(dfsum$Time)
+        periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
+        st<-getState(v$datasetpick)
+        row<-storTableCalc |> filter(State==st)
+        sh<-dfsum %>% summarise(max(cumShortMWh))
+        
+        df<-tibble(
+          `Parameter`=c("Input Data","Period length","Overbuild factor","Baseload size","Battery energy storage size","Gas Peaking","GW per overbuild unit"),
+          `Value`=c(input$datasetpick,paste0(comma((nperiods/12)/24)," days"),comma(input$ofac),paste0(comma(input$blmult*input$baseloadsize)," MW"),
+          paste0(comma(input$bmult*input$bsize)," MWh (",comma((input$bmult*input$bsize*1e6)/(periodAvgDemand*1e9))," hrs)"),
+                 paste0(comma(input$gaspeak*input$gasmult)," GW"),
+          paste0(comma(row$Solar2024+row$Wind2024)," GW - Solar(",comma(row$Solar2024),") Wind(",comma(row$Wind2024),")")
+          )
+        )
+        df |> gt() |> tab_header(title=paste0("Slider parameters (Shortfall ",comma(sh/1000),"GWh)")) |> tab_options(table.width=pct(100),
                                                                            table.background.color=tbgcolor,
                                                                            table.font.color=tfgcolor,
                                                                            column_labels.hidden=T,heading.align="left")
