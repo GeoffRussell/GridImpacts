@@ -18,8 +18,8 @@ library(bsicons)
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 comma3<-function(x) prettyNum(signif(x,digits=3),big.mark=",")
 markdownFile<-function(filename) {
-  #t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
-  t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
+  t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
+  #t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
   markdown(t)
 }
 options(scipen=999)
@@ -71,17 +71,17 @@ dataSets<-c(
 dataSetTitles<-c(
   "(NSW) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024", 
   "(QLD) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
-  "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(Victoria) Week ending 25 Jan 2024",
-  "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 16 May 2024",
-  "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nVIC Week ending 16 May 2024",
-  "(NEM) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\nNEM Week ending 16 May 2024",
-  "(SA) June 2024"="Electricity renewable/demand/shortfall\nJune 2024",
-  "(SA) June 2024 (1st week only)"="Electricity renewable/demand/shortfall\n1st Week June 2024",
-  "(SA) WE 30 January 2024"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 Jan 2024",
-  "(SA) WE 30 November 2023"="Electricity renewable/demand/curtailment/shortfall\nWeek ending 30 November 2023",
-  "(SA) First heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 21 December 2019",
-  "(SA) Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 28 December 2019",
-  "(SA) March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\nHeatwave, WE 12 March 2024"
+  "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 25 Jan 2024",
+  "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 16 May 2024",
+  "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 16 May 2024",
+  "(NEM) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(NEM) Week ending 16 May 2024",
+  "(SA) June 2024"="Electricity renewable/demand/shortfall\n(SA) June 2024",
+  "(SA) June 2024 (1st week only)"="Electricity renewable/demand/shortfall\n(SA) 1st Week June 2024",
+  "(SA) WE 30 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 Jan 2024",
+  "(SA) WE 30 November 2023"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 November 2023",
+  "(SA) First heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 21 December 2019",
+  "(SA) Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 28 December 2019",
+  "(SA) March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 12 March 2024"
 )
 #-----------------------------------------------------
 # End Datasets
@@ -579,7 +579,7 @@ server <- function(ui,input, output,session) {
       #updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize,value=row$Value)
       #updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1,value=ifelse(v$ofac<=row$ofac,v$ofac,1))
       updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize)
-      updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1)
+      updateSliderInput(session,"ofac",max=comma3(row$ofac),step=0.25,min=1)
     })
     gendfsum<-reactive({
       print(input$datasetpick)
