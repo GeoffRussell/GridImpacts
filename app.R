@@ -628,11 +628,11 @@ server <- function(ui,input, output,session) {
           "Solar ",                              solar,   "GW",                solar*input$solarCost,    input$solarLifespan,         0,
           "Home Batteries ",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
           "Utility Batteries ",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
-          "Gas peaker ",                          gaspk,   "GW",                gaspk*input$gasCost,       input$gasLifespan,         1.15,
+          "Gas peaker ",                          gaspk,   "GW",                gaspk*input$gasCost,       input$gasLifespan,         2.15,
           "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     input$nukeOps
         )
         
-        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost+`OAndMFac`*Cost) 
+        dfout<-df |> mutate("Build Times"=input$nukeLifespan/`Life span`,"Lifetime Cost"=`Build Times`*Cost+(`OAndMFac`-1)*Cost) 
         
         dfout |> gt(rowname_col="Technology") |> 
           cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
