@@ -1,4 +1,30 @@
 
+## Caveats 
+
+A real financial model would guess the price of everything and devise a purchasing timeline and use the
+price at the time to model every purchase. If wind, solar and batteries continue to decline in price, this
+will give a lower price compared to my simply pick a price and buy everything approach. You could pick a suitably
+low price and get the same answer. I'm loath to use the more accurate method because it complicates the process 
+without making much difference.  
+
+The big question is simple. Does whacking 10-15 GW of nuclear (probably the most we could build before 2050) make
+the generation of electricity cheaper or more expensive. It will certainly require coal/gas plants for longer before leading to a cleaner system in the long run.  I don't see anybody in the Australian political landscape who
+actually  gives a damn about the climate. There are just varying level of pretence and virtue signaling. If you
+want to offset that delay in closing coal, then you just drop the cattle population by a suitable amount. Back
+in 1990 the sheep population went from 190 million to about 70 million in less than a decade. Did you
+notice? Unless you were a sheep farmer, the answer is probably "No!". If you care about the climate, then
+you will regard cattle similarly to coal; they generate more warming annually than our domestically burned fossil 
+fuels.
+
+So will the inaccuracies of my cost model make a difference to answering the big question? I think not; given the
+US DOE has looked at the same question and got qualitatively the same answer. Adding nuclear power to a largely
+renewable system makes it cheaper. The system has to be "largely renewable" for now, because we will take some
+time to developne nuclear building expertise. Eventually, a rational person would opt for all nuclear. It's
+far better environmentally than renewables. Less mining, less habitat destruction, less pollution, easier waste
+management. It's simply better.
+
+Okay, let's proceed with a few other notes and then discuss nuclear costs and the recent US DOE report.
+
 ## Reminder ... costs ain't costs 
 
 
