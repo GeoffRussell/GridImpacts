@@ -426,7 +426,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.96+costs)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.97+costs)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -496,6 +496,7 @@ ui <- function(request) {
                                            sliderInput("gbattLifespan",label="Grid battery lifespan",min=10,max=25,step=1,value=15),
                                            sliderInput("windLifespan",label="Wind farm lifespan",min=25,max=35,step=5,value=25),
                                            sliderInput("solarLifespan",label="PV lifespan",min=15,max=35,step=5,value=25),
+                                           sliderInput("gasLifespan",label="Gas lifespan",min=25,max=40,step=5,value=30),
                                            bsTooltip("battLifespan","The current Aurecon/CSIRO Gencost battery lifespan is estimated at 10 years",placement="top",trigger="hover")
                                            ),
                                            column(width=4,
@@ -503,7 +504,9 @@ ui <- function(request) {
                                            sliderInput("gridBattCost",label="Utility battery cost ($/kwh)",min=242,max=592,step=10,value=592),
                                            sliderInput("windCost",label="Onshore wind cost ($/kw)",min=1763,max=2931,step=30,value=2931),
                                            sliderInput("solarCost",label="Solar cost ($/kw)",min=583,max=1526,step=30,value=1526),
-                                           bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover")
+                                           bsTooltip("solarCost","The current CSIRO Gencost solar cost is similar between utility and rooftop",placement="top",trigger="hover"),
+                                           sliderInput("gasCost",label="Gas peaker cost ($/kw)",min=830,max=5000,step=400,value=1059),
+                                           bsTooltip("gasCost","The upper limit is with CCS (carbon capture and storage)",placement="top",trigger="hover")
                                            ),
                                            column(width=4,
                                            sliderInput("nukeCost",label="Baseload cost (nuclear) ($/kw)",min=7541,max=12000,step=500,value=8655),
@@ -608,11 +611,13 @@ server <- function(ui,input, output,session) {
         batt=v$bsize-row$Value
         batthome=batt*(row$house50/(row$grid50+row$house50))
         battgrid=batt*(row$grid50/(row$grid50+row$house50))
+        gasMWh<-dfsum %>% summarise(sum(gasEout))
         
         nwfac=input$nuclearLifespan/input$windLifespan
         hbfac=input$nuclearLifespan/input$battLifespan
         
         bl=input$baseloadsize*input$blmult
+        gaspk<-input$gaspeak*input$gasmult
         
         df<-tribble(
           ~Technology,                    ~Requirement,       ~Units,                           ~Cost,            ~"Life span",   ~OAndMFac,
@@ -620,6 +625,7 @@ server <- function(ui,input, output,session) {
           "Solar ",                              solar,   "GW",                solar*input$solarCost,    input$solarLifespan,         0,
           "Home Batteries ",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
           "Utility Batteries ",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
+          "Gas peaker ",                          gaspk,   "GW",                gaspk*input$gasCost,       input$gasLifespan,         1.15,
           "Nuclear as baseload ",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     input$nukeOps
         )
         
@@ -627,8 +633,12 @@ server <- function(ui,input, output,session) {
         
         dfout |> gt(rowname_col="Technology") |> 
           cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
+          tab_footnote(footnote="Gas lifetime fuel use is estimated assuming a 10% capacity factor") |>
+          tab_footnote(footnote="Home battery costs are ignored by AEMO/ISP/CSIRO/Government in all costings despite being essential") |>
           tab_header(title=paste0("Build costs over ",input$nukeLifespan," years")) |>  
-          cols_label("Units"="",Requirement="","Cost"="Cost ($m)","Lifetime Cost"="Lifetime cost ($m)") |> fmt_integer(columns=c("Cost","Lifetime Cost")) |>
+          cols_label("Units"="",Requirement="","Cost"="Cost ($m)","Lifetime Cost"="Lifetime cost ($m)") |> 
+          fmt_integer(columns=c("Cost","Lifetime Cost")) |>
+          fmt_number(columns=c("Build Times")) |>
           grand_summary_rows(columns=c("Cost","Lifetime Cost"),fns=list(label="Total $m")~sum(.),fmt=~fmt_integer(.)) |>
           tab_options(table.width=pct(100), table.background.color=tbgcolor,
                               table.font.color=tfgcolor,
@@ -654,6 +664,7 @@ server <- function(ui,input, output,session) {
         totremwh<-dfsum %>% summarise(sum(dblrenew/12))
         shortMW<-dfsum %>% summarise(max(maxShortMW))
         gasMWh<-dfsum %>% summarise(sum(gasEout))
+        gasCap<-gasMWh/(input$gaspeak*nperiods*24)*100
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
         
         hrs<-8
@@ -664,7 +675,7 @@ server <- function(ui,input, output,session) {
         df<-tibble(
           `Parameter`=c("Demand","Shortfall","Curtailment","Maximum power shortage (MW)","Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
-                        "Battery capacity factor","Max 8hr shortage end time","Gas output","Carbon dioxide"),
+                        "Battery capacity factor","Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide"),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
                     paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
                     paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"%)"),
@@ -674,6 +685,7 @@ server <- function(ui,input, output,session) {
                     paste0(comma(100*bsup/((bmax/12)*nperiods)),"%"),
                     paste0(r$Time,": ",comma(-r$diff),"MWh"),
                     paste0(comma(gasMWh/1000)," GWh"),
+                    paste0(comma(gasCap)," %"),
                     paste0(comma(gasMWh*gasintensity)," tonnes")
                     )
         )
