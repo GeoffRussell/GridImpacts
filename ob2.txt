@@ -7,4 +7,133 @@ the item is worth?  But you can't get it locally and you want it; or perhaps you
 plaster and you can't drive and catching the bus to the closest shop is complex.   Electricity is
 like that; always. The cost of electricity is dominated by the cost of delivery.
 
+You can select different sets of data corresponding to various time periods. Most are for South Australia, but
+there are a couple of Victorian sets and one from the entire NEM.
 
+### Slider: Battery Size in MWh
+
+You can set this to the total energy storage you want to investigate.  The upper limit of
+the slider roughly matches the amount of energy storage that the ISP considers being available in 2050. You
+can use the "Battery multiplier" slider to exceed this if you wish.
+
+### Note on magic batteries 
+
+The GridImpacts model assumes that battery storage is **magic**. By which I mean it can store
+any excess energy regardless of the power and location of that energy. In the real world, the transmission
+lines between that excess energy and the batteries may not be available; they may be being fully used. 
+In which case that excess energy will simply be lost; but in my simple model 
+with magic batteries, nothing is ever wasted if there is available battery space. 
+
+Secondly, real batteries have maximum power ratings. The fact that you have 1,000 MWh of electricity stored in
+a set of batteries doesn't mean you can get 2,000 MW of power for half an hour.
+
+For example, in South Australia at the end of 2024, there was 1,018 MWh 
+of battery energy storage, most of it in 3 big 
+batteries: Hornsdale 150 MW/194MWh, Torrens Island 250MW/250MWh, and Blyth 200MW/400MWh. In total we have a
+maximum of 805 MW (of power) available; but if you set the 
+GridImpacts Battery Size to 1,018 MWh, it would assume you could
+supply 1,018 MW for an hour; or even 2,036 MW for half an hour ... that's what magic batteries do. Real ones
+can't do this. See the Appendix below for more on this issue.
+
+### Slider: Battery multiplier
+
+This slider just multiplies the battery size. It predates the dynamic setting of the Battery Size upper limit, but has been retained to allow you to specify even bigger sizes. 
+
+### Slider: Gas Peakers (GW) 
+
+Gas turbines in power stations come in a few different types.  Some are expensive and highly efficient, while
+others are cheap and less efficient. The AEMO Integrated System Plan for Australia proposed replacing our
+current expensive and efficient turbines that operate quite a lot with cheap and less efficient ones that
+run less frequently. These cheap turbines are often called *gas peakers*; because it is the cheapest
+way of handling unexpected peaks in electricity consumption. You don't want expensive and efficient equipment
+standing idle in the off chance that you might need it for a few days a year. 
+
+It's like car makers putting those funny little spare wheels in your boot, rather than a 
+full sized spare wheel. They are cheapest way of handling a rare occurrence.
+
+GridImpacts lets you specify some level of gas peakers; in gigawatts. The down side of gas peakers is the
+carbon dioxide emissions; in addition to the vast gas infrastructure required to operate any 
+gas system.
+
+### Slider: Peaker multiplier 
+
+This multiplies the peak gas power output.
+
+### Slider: Overbuild factor 
+
+This slider allows you to see what happens if you just double the existing amount of wind and solar capacity. 
+
+As this factor rises, you will see more energy flow into the battery. Eventually the battery will be full and more energy will be curtailed. The limit on this slider is set roughly to the ISP limit in 2050 for the region. 
+
+For example, the GWs of wind and solar power in QLD in 2050, according to the ISP, is about 5.44 times the
+current level. By which I mean the sum of wind and power GW in 2050 is 5.44 times the sum today. But the ratio
+may not be the same, and the ratio of rooftop to utility solar can also vary considerably between regions.
+
+### Slider: Baseload size (MW) 
+
+You can test the impact of having a baseload energy source on the amount of overbuild and batteries you
+need to eliminate shortfall. Having a baseload source also reduces the need for interconnections and
+peaking gas plants. In NSW and QLD, it makes sense to consider the pumped hydo systems of
+Snowy 2.0 and Borumba as baseload sources; Snowy 2.0 could supply 2GW as 
+baseload for 174 days, while Borumba can supply 2GW as baseload for 24 days. Neither would do this given current
+market rules. But suspensions of the market and direction by AEMO will increase as the penetration of wind
+and solar increases; as demonstrated by the frequent and growing market interventions in SA as wind and solar
+penetration have increased.
+
+### Slider: Baseload multiplier 
+
+This is similar to the Battery multiplier.
+
+### Checkbox: Show shortfall (GWh)
+
+You can turn the shortfall display off if you wish to unclutter the chart and focus on some region.
+
+### Checkbox: Show dumped energy (GWh)
+
+Dumping electricity is typically called *curtailment*. When you have low overbuild, this will usually
+be because of either grid congestions or economics; meaning you choose to dump energy rather than take 
+a low price for your electricity.
+
+### Checkbox: Show wind vs demand 
+
+This click box just strips back the chart to basics and focuses on the wind output and demand. In
+South Australia, it is quite common during summer heatwaves for wind output to be at it's lowest when
+demand is at its highest. For example select the *"March heatwave, 2024"* dataset and you'll see 
+the peaks in demand correspond with drops in wind.
+
+The click box doesn't "play well" with other
+selections ... it won't show any Overbuild renewable generation if you have some selected.
+
+### Checkbox: Show battery charge level (%) 
+
+Click this and yet another line appears on the chart showing the battery state over time. 
+
+## Tab: Stats 
+
+The *Stats* tab gives summary statistics for the impacts of changes you make to the sliders.
+
+Have a look at the night of the 24th of November. It was a *very* still night. Assuming you
+have dialled in a doubling of wind+solar, the summary board shows
+an accumulated shortfall over the night of 5,463, even with twice the renewables that we have now. Can
+we fix that shortfall with storage?
+
+
+## Appendix: Magic batteries and real ones
+
+In the real world every battery has a maximum power rating. It can't deliver power at a level
+greater than this, even if it has plenty of energy. Suppose, for example, you have a real 
+100 MW/200 MWh battery. All batteries are characterised by two numbers.
+They tell you respectively the maximum power rating and the maximum amount of energy that
+can be stored. Some people would call it a 100MW/2 hour battery; which means the same thing. 
+It can provide a maximum of 100 MW of power for 2 hours; resulting in 
+200 MWh of energy being delivered.  If you need 175 MW of power, this battery won't deliver it; you'll need a second battery for the remaining 75 MW. 
+
+Magic batteries don't exist. They are a simplification. Using GridImpacts, you'll be able to
+watch as the shortfall reduces as you increase the size of the magic battery. Suppose you dial in 
+10,000 MWh of batteries and the shortfall vanishes.  
+Does that prove that this storage will be
+enough in the real world with a real transmission system and real batteries? No, it does not. 
+On the other hand, if 10,000 MWh *didn't* drive the shortfalls to zero, you'd know 
+that 10,000 MWh of real batteries wouldn't work; no matter where you put them or how you configured them.  
+
+Note the assymetry. You can prove something won't work with GridImpacts, but not that it will. 
