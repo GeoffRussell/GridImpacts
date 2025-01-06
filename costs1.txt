@@ -1,5 +1,27 @@
 
+## Reminder ... costs ain't costs 
 
+
+It pays to recall that when 
+Chris Bowen says, correctly, that renewables are the cheapest way to generate electricity, he
+isn't talking about costs. Generation costs are a small part of retail costs. Other parts are
+
+1. Transmission ... the big towers and cables that transmit electricity long distances
+1. Distribution ... the small poles and wires that transmit electricity the last few kms to your home or business 
+1. Reliability ... how much does it cost to generate solar power at night? You can't. You need storage of some kind and that pushes prices up. 
+
+GridImpacts doesn't consider transmission or distribution, but it does tackle reliability. Play with the various settings and you'll soon understand why the cheapest form of generation is not usually the cheapest when reliability is considered.
+
+Of the three big components of electricity costs, *distribution* is the biggest. Suppose you had
+a free way of generating electricity, if that technology meant you had to rebuild the distribution system in any
+substantial manner, then the retail price would rise. The distribution system isn't just wondrous complex, it is
+an accumulated asset built over decades. 
+
+Here's a chart which highlights the difference between generation costs and retail costs. It's misleading because it
+includes recent subsidies. Without these the retail line would be even higher. Note also how the retail price
+was largely insulated from the huge spike in costs when Russia invaded Ukraine. 
+
+![](NEMWholeSaleRetail2018Q3-2024Q3.png){style="width: 100%; margin: auto;"}
 
 
 ## Nuclear: Lifetime costs
