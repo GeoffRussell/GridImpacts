@@ -625,11 +625,11 @@ server <- function(ui,input, output,session) {
         
         df<-tribble(
           ~Technology,                    ~Requirement,       ~Units,                           ~Cost,            ~"Life span",   ~OAndMFac,
-          "Home batteries",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
+          "(Magic) Home batteries",                 batthome,   "MWh",        batthome*input$homeBattCost/1e3,   input$battLifespan,         0,
           "Rooftop solar",                           rtsolar,   "GW",                rtsolar*input$solarCost,    input$solarLifespan,         0,
           "Utility solar",                     usolar,   "GW",                usolar*input$solarCost,    input$solarLifespan,         0,
           "Wind",                                wind,   "GW",                  wind*input$windCost,    input$windLifespan,          0,
-          "Utility Batteries",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
+          "(Magic) Utility Batteries",              battgrid,   "MWh",        battgrid*input$gridBattCost/1e3,      input$gbattLifespan,     0,
           "Gas peaker",                          gaspk,   "GW",                gaspk*input$gasCost,       input$gasLifespan,         1.15,
           "Nuclear as baseload",                bl,      "GW",                  bl*input$nukeCost/1e3,       input$nukeLifespan,     input$nukeOps-1
         )
@@ -641,9 +641,10 @@ server <- function(ui,input, output,session) {
         
         dfout |> gt(rowname_col="Technology") |> 
           cols_align(columns=c("Cost","Lifetime Cost"),align="right") |>
-          tab_footnote(footnote="Gas lifetime fuel use is estimated assuming a 10% capacity factor") |>
-          tab_footnote(footnote="Home battery costs are ignored by AEMO/ISP/CSIRO/Government in all costings despite being essential") |>
-          tab_footnote(footnote=paste0("Cost minus rooftop solar and home batteries $",comma(govcost),"m")) |>
+          tab_footnote(footnote="1. Gas lifetime fuel use is estimated assuming a 10% capacity factor") |>
+          tab_footnote(footnote="2. Home battery costs are ignored by AEMO/ISP/CSIRO/Government in all costings despite being essential") |>
+          tab_footnote(footnote=paste0("3. Lifetime cost minus rooftop solar and home batteries: $",comma(govcost),"m")) |>
+          tab_footnote(footnote="4. See Quick Start tab panel for a description of magic batteries ") |>
           tab_header(title=paste0("Build costs over ",input$nukeLifespan," years")) |>  
           cols_label("Units"="",Requirement="Required","Cost"="Cost ($m)","Lifetime Cost"="Lifetime cost ($m)") |> 
           fmt_integer(columns=c("Cost","Lifetime Cost","Requirement")) |>

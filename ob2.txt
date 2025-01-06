@@ -21,11 +21,16 @@ lines between that excess energy and the batteries may not be available; they ma
 In which case that excess energy will simply be lost; but in my simple model 
 with magic batteries, nothing is ever wasted if there is available battery space. 
 
+Secondly, real batteries have maximum power ratings. The fact that you have 1,000 MWh of electricity stored in
+a set of batteries doesn't mean you can get 2,000 MW of power for half an hour.
+
 For example, in South Australia at the end of 2024, there was 1,018 MWh 
 of battery energy storage, most of it in 3 big 
 batteries: Hornsdale 150 MW/194MWh, Torrens Island 250MW/250MWh, and Blyth 200MW/400MWh. In total we have a
-maximum of 805 MW available; but if you set the GridImpacts Battery Size to 1,018 MWh, it would assume you could
-supply 1,018 MW for an hour; or even 2,036 MW for half an hour ... that's what magic batteries do. 
+maximum of 805 MW (of power) available; but if you set the 
+GridImpacts Battery Size to 1,018 MWh, it would assume you could
+supply 1,018 MW for an hour; or even 2,036 MW for half an hour ... that's what magic batteries do. Real ones
+can't do this. See the Appendix below for more on this issue.
 
 ### Slider: Battery multiplier
 
