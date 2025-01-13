@@ -1,0 +1,44 @@
+---
+title: "plot-nemlog"
+author: "GeoffRussell"
+date: "2025-01-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r nemlog}
+
+getDemandFile<-function(fname) {
+  df<-read_csv(fname) |>
+  mutate(nsw1=`OPERATIONAL_DEMAND NSW1`,vic1=`OPERATIONAL_DEMAND VIC1`,sa1=`OPERATIONAL_DEMAND SA1`,
+         qld1=`OPERATIONAL_DEMAND QLD1`,
+         tas1=`OPERATIONAL_DEMAND TAS1`,
+         nem=sa1+nsw1+qld1+vic1+tas1) |> 
+    select(`Time`,sa1,nsw1,vic1,qld1,tas1,nem)  |> 
+    pivot_longer(cols=sa1:nem)
+  df
+  
+}
+df1<-getDemandFile("NSW1,QLD1,SA1,TAS1,VIC1 OPERATIONAL_DEMAND from REGIONAL_OPERATIONAL_DEMAND (MW) _ Period_ 2024-05-31 23_30 to 2024-06-30 23_29 _ GPE NEMLog-data-2025-01-13 17_10_34.csv") 
+
+df2<-getDemandFile("NSW1,QLD1,SA1,TAS1,VIC1 OPERATIONAL_DEMAND from REGIONAL_OPERATIONAL_DEMAND (MW) _ Period_ 2024-01-01 00_30 to 2025-01-01 00_29 _ GPE NEMLog-data-2025-01-14 09_20_58.csv") 
+
+
+df2 |> filter(name=="nem") |> ggplot() + geom_line(aes(x=Time,y=value))
+df2 |> filter(name!="nem") |> ggplot() + geom_line(aes(x=Time,y=value,color=name))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
