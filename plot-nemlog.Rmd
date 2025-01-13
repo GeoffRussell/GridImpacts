@@ -28,17 +28,8 @@ df1<-getDemandFile("NSW1,QLD1,SA1,TAS1,VIC1 OPERATIONAL_DEMAND from REGIONAL_OPE
 df2<-getDemandFile("NSW1,QLD1,SA1,TAS1,VIC1 OPERATIONAL_DEMAND from REGIONAL_OPERATIONAL_DEMAND (MW) _ Period_ 2024-01-01 00_30 to 2025-01-01 00_29 _ GPE NEMLog-data-2025-01-14 09_20_58.csv") 
 
 
-df2 |> filter(name=="nem") |> ggplot() + geom_line(aes(x=Time,y=value))
-df2 |> filter(name!="nem") |> ggplot() + geom_line(aes(x=Time,y=value,color=name))
+df2 |> filter(name=="nem") |> ggplot() + geom_smooth(aes(x=Time,y=value))
+df2 |> filter(name!="nem") |> ggplot() + geom_smooth(aes(x=Time,y=value,color=name))
 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
