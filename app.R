@@ -484,6 +484,7 @@ ui <- function(request) {
                                                   gt_output("calcoutput"),
                                                   plotOutput("onshortages"),
                                                   gt_output("calctable"),
+                                                  gt_output("calcwind"),
                                                   uiOutput("calctableexp")
                                                   #,
                                                    #uiOutput("calcresult2")
@@ -708,10 +709,45 @@ server <- function(ui,input, output,session) {
                                                                         column_labels.hidden=T,heading.align="left")
     })
     
+    output$calcwind <- render_gt({
+        dfsum<-gendfsum()
+        nperiods<-length(dfsum$Time)
+        days=as.integer(nperiods/12/24)
+        lab<-"Weekly"
+        if (days>10) {
+          days=7
+        } else {
+          lab<-"Bidaily"
+          days=2
+        }
+        
+        meanwind<-mean(dfsum$wind) # this is average power
+        print(meanwind)
+        rollsum<-roll_sum(dfsum$wind/12,n=12*24*days,fill=0)
+        mrollmin<-min(rollsum[rollsum>0])
+        #print(rollsum)
+        print(mrollmin)
+        dfw<-tibble(
+          ` `=c("Mean wind power (MW)",
+                "Daily average (GWh)",
+                paste0(lab," min (GWh)"),
+                "Percent"
+                ),
+          `Period`=c(comma(meanwind), 
+                     comma((meanwind*24*days)/1000),
+                     comma(mrollmin/1000),
+                     comma( 100*((mrollmin/1000)/((meanwind*24*days)/1000))))
+        )
+        dfw |> gt() |> tab_header(title=paste0("Wind Averages ",comma(days)," days")) |> tab_options(table.width=pct(100),
+                                                                           table.background.color=tbgcolor,
+                                                                           table.font.color=tfgcolor,
+                                                                          heading.align="left")
+    })
     output$calctable <- render_gt({
         dfsum<-gendfsum()
         maxwind<-max(dfsum$wind)
         minwind<-min(dfsum$wind)
+        meanwind<-mean(dfsum$wind)
         dfsum$windhr<-roll_sum(dfsum$wind/12,n=12,fill=0)
         dfsum$wind8hr<-roll_sum(dfsum$wind/12,n=12*8,fill=0)
         minwindhr<-min(dfsum$windhr[dfsum$windhr>0])
@@ -724,7 +760,7 @@ server <- function(ui,input, output,session) {
           `1 Hour`=c(comma(maxwindhr),comma(minwindhr),paste0(comma(minwindhr/maxwindhr*100),"%")),
           `8 Hours`=c(comma(maxwind8hr),comma(minwind8hr),paste0(comma(minwind8hr/maxwind8hr*100),"%"))
         )
-        df |> gt() |> tab_header(title="Wind performance") |> tab_options(table.width=pct(100),
+        df |> gt() |> tab_header(title="Wind variability") |> tab_options(table.width=pct(100),
                                                                            table.background.color=tbgcolor,
                                                                            table.font.color=tfgcolor,
                                                                           heading.align="left")
