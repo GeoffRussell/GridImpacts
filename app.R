@@ -681,6 +681,11 @@ server <- function(ui,input, output,session) {
         gasCap<-gasMWh/(input$gaspeak*nperiods*24)*100
         periodAvgDemand<-(dfsum %>% summarise(mean(demand)))/1000
         
+        #-------------------------------------------------------------------
+        # The use of roll_sum is a bit crude.
+        # There is much better code in TwitterCharts/testfunction.Rmd
+        # which is more general and locates the start of the period found
+        #-------------------------------------------------------------------
         hrs<-8
         dfsum$diff<-roll_sum((dfsum$dblrenew-dfsum$demand)/12,n=12*hrs,align="right",fill=0)
         dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
