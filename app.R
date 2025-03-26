@@ -14,6 +14,7 @@ library(RcppRoll)
 library(gt)
 library(bslib)
 library(bsicons)
+library(hash)
 
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 comma3<-function(x) prettyNum(signif(x,digits=3),big.mark=",")
@@ -59,6 +60,8 @@ dataSets<-c(
   "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
   "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
   "(SA) June 2024"="openNEMMerge-June-2024.csv",
+  "(SA) PE March 24 2025"="openNEMMerge-SA-24-03-2025-40D.csv",
+  "(QLD) PE March 24 2025"="openNEMMerge-QLD-24-03-2025-40D.csv",
   "(QLD) end of December 2024"="openNEMMerge-QLD-30-12-2024-19D.csv",
   "(NSW) end of December 2024"="openNEMMerge-NSW-30-12-2024-19D.csv", 
   "(SA) June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
@@ -69,6 +72,8 @@ dataSets<-c(
   "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles<-c(
+  "(SA) PE March 24 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) PE March 24 2025",
+  "(QLD) PE March 24 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) PE March 24 2025",
   "(NSW) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024", 
   "(QLD) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
   "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 25 Jan 2024",
@@ -85,12 +90,18 @@ dataSetTitles<-c(
 )
 #-----------------------------------------------------
 # End Datasets
-# Check Datasets
 #-----------------------------------------------------
+# Check Datasets and find the date ranges of the data in each
+#-----------------------------------------------------
+dateLimits<-hash()
 for (i in dataSets) {
   if (!file.exists(i)) {
     cat("Missing: ",i,"\n") 
   }
+  tmp=read_csv(i,show_col_types = FALSE)
+  dateLimits[i]=list((tmp$date)[1],(tmp$date)[length(tmp$date)])
+#  cat(paste0("DDDD",(tmp$date)[1],"\n"))
+#  cat(paste0("EEEE",(tmp$date)[length(tmp$date)],"\n"))
 } 
 #-----------------------------------------------------
 # Define various constants and functions used to process the data
@@ -141,13 +152,22 @@ isqld<-function(f) {
 #---------------------------------------------------------------------------------------------------------
 # The input has a different set of columns by region
 #---------------------------------------------------------------------------------------------------------
-readDataSet<-function(n) {
+readDataSet<-function(n,drange) {
   #print(n)
-  dfdata<-read_csv(dataSets[n]) %>% 
+  dfdata<-read_csv(dataSets[n],show_col_types = FALSE) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
-    rename_with(~sub('  ',' ',.x))
+    rename_with(~sub('  ',' ',.x)) 
+  print(paste0("LTIME1: ",length(dfdata$Time)))
   
   flds<-findDemandColumns(dfdata)
+  str(drange[1])
+  str(dfdata$Time)
+  dftmp <- dfdata %>% filter(Time>=drange[1] & Time<=drange[2])
+  print(paste0("LTIME2: ",length(dfdata$Time)))
+  # the first time through this routine may have invalid drange data, because the widget isn't initialised ... so we ignore it
+  if (length(dftmp$Time>0)) {
+    dfdata <- dftmp 
+  }
   
   print(paste(flds))
   #print(paste(findDemandColumns(dfdata)))
@@ -157,7 +177,10 @@ readDataSet<-function(n) {
   
   dfdata %>% mutate(across(everything(),\(x) replace_na(x,0))) %>% mutate(demand=select(.,all_of(flds)) %>% apply(1,sum)) 
 }
-dfout<-readDataSet("(SA) WE 30 November 2023")
+nnn<-"(SA) WE 30 November 2023"
+d1<-values(dateLimits[dataSets[nnn]])[1][[1]] # nb.. members of the environment are in a list with 1 member
+d2<-values(dateLimits[dataSets[nnn]])[2][[1]]
+dfout<-readDataSet("(SA) WE 30 November 2023",c(d1,d2))
 #---------------------------------------------------------------------------------------
 # Find night time bands 
 #---------------------------------------------------------------------------------------
@@ -236,10 +259,11 @@ cols<-c(
 # Calc: the main function which calculates the flow of electricity
 # between the generators and batteries
 #-----------------------------------------------------------------
-calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0) {
+calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0,drange=c(ymd("1900-01-01"),ymd("1900-01-01"))) {
+  print(paste0("DRANGE: ",drange[1]," to ",drange[2]))
   print(dataSets[dspick])
   gasmw<-ifelse(gaspeak>0,gaspeak*1000,0)
-  dfout<-readDataSet(dspick)
+  dfout<-readDataSet(dspick,drange)
   batteryMaxCapacity<-bmax
   dfsum <- dfout %>% mutate(
     battuse=`Battery (Discharging) - MW`,
@@ -407,7 +431,7 @@ storTable<-tribble(
   "VIC",  50000,   13000,    1000,       0, 1150,      18,     31.4,     23.8,     4.5,          7,     5.04,  45.226
 )
 storTableCalc<-storTable |> mutate(ofac=(Wind2050+Solar2050)/(Wind2024+Solar2024))
-print(storTableCalc)
+#print(storTableCalc)
 
 #-----------------------------------------------------------------
 # UI
@@ -440,13 +464,16 @@ ui <- function(request) {
                                 tabPanel("Dashboard",
                                         chooseSliderSkin("Shiny"),
                                         fluidRow(
-                                          column(width=12,
+                                          column(width=6,
                                                   selectInput("datasetpick",choices=sort(names(dataSets)),
                                                               selected=c("(SA) WE 30 November 2023"),
                                                               multiple=FALSE,
                                                               label = 'Datasets'
                                                   ), 
                                                   bsTooltip("datasetpick","Select an alternative set of real world data, your choice determines the region and sets slider limits",placement="top",trigger="hover")
+                                          ),
+                                          column(width=6,
+                                                  dateRangeInput("daterange",label="Select date range:" ,start=Sys.Date(),end=Sys.Date()+1,format="yyyy-mm-dd")
                                           )
                                         ),
                                          fluidRow(
@@ -573,6 +600,7 @@ server <- function(ui,input, output,session) {
     observeEvent(input$bmult,{ v$bmult=input$bmult })
     observeEvent(input$baseloadsize,{ v$baseloadsize=input$baseloadsize })
     observeEvent(input$blmult,{ v$blmult=input$blmult })
+    observeEvent(input$daterange,{ v$daterange=input$daterange })
     
     observeEvent(input$datasetpick,{
       #print(paste0("OE1: ",input$datasetpick))
@@ -585,10 +613,16 @@ server <- function(ui,input, output,session) {
       #updateSliderInput(session,"ofac",max=comma3(row$ofac),step=1,min=1,value=ifelse(v$ofac<=row$ofac,v$ofac,1))
       updateSliderInput(session,"bsize",max=row$MaxSize,step=row$Step,min=row$MinSize)
       updateSliderInput(session,"ofac",max=comma3(row$ofac),step=0.25,min=1)
+      d1<-values(dateLimits[dataSets[input$datasetpick]])[1][[1]] # nb.. members of the environment are in a list with 1 member
+      d2<-values(dateLimits[dataSets[input$datasetpick]])[2][[1]]
+      str(d1)
+      updateDateRangeInput(session,"daterange",start=d1,end=d2,min=d1,max=d2)
+      #cat(paste0("File: ",input$datasetpick," ->  ",dataSets[input$datasetpick],"\n"))
+      
     })
     gendfsum<-reactive({
       print(input$datasetpick)
-      bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize,input$gaspeak*input$gasmult)
+      bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize,input$gaspeak*input$gasmult,input$daterange)
       dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
