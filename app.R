@@ -270,7 +270,9 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0,drange=c(ymd("
     #imports=`Imports - MW`,
     #diesel=`Distillate - MW`,
     wind=`Wind - MW`,
-    solar=`Solar (Rooftop) - MW`+`Solar (Utility) - MW`) 
+    solar=`Solar (Rooftop) - MW`+`Solar (Utility) - MW`, 
+    solaru=`Solar (Utility) - MW`,
+    solarr=`Solar (Rooftop) - MW`)
   
   if (isnem(dspick)) {
     dfsum<-dfsum %>% mutate(renew=wind+solar,dblrenew=ofac*renew)
@@ -500,6 +502,9 @@ ui <- function(request) {
                                          fluidRow(
                                            column(width=12,
                                                   plotOutput("shortfall",height=600)
+                                           ),
+                                           column(width=12,
+                                                  plotOutput("solarratio",height=400)
                                            )
                                          )
                                 ),
@@ -869,6 +874,18 @@ server <- function(ui,input, output,session) {
       p<-dfn |> ggplot() + geom_col(aes(x=ymd(Day),y=Shortage/1000),fill="grey")+
         geom_text(aes(x=ymd(Day),y=ifelse(Shortage/1000>0,Shortage/1000,0),label=comma(Shortage/1000),vjust=-0.1))+
         labs(x="",y="GWh",title="Overnight (9pm-9am) shortage\nDifference between demand and wind+solar supply\n(ie., the amount you need batteries or gas for)\nNegative values are when supply exceeds demand")
+      p +theme_bw()
+    })
+    output$solarratio <- renderPlot({
+      dfsum<-gendfsum()
+      #write_csv(dfsum,"xxx1.csv")
+      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh)
+      print(colnames(dfsum))
+      p<-dfsum |> ggplot(aes(x=Time))+
+        #geom_line(aes(y=solarr),color="blue")+
+        #geom_line(aes(y=solaru),color="red")+ 
+        geom_line(aes(y=ifelse(solaru>0,ifelse(solarr/solaru<6,solarr/solaru,1),1)))+labs(title="Ratio of Rooftop to Utility solar",y="Ratio")
+      
       p +theme_bw()
     })
     output$shortfall <- renderPlot({
