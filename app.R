@@ -33,7 +33,7 @@ gasintensity<-0.437    # kg-co2/kwh (EIA)
 # 2024 ISP data  ... 
 #-----------------------------------------------------
 ispfile="isp2024-cdp3.csv"
-cdp3<-read_csv(ispfile)
+cdp3<-read_csv(ispfile,show_col_types = FALSE)
 cdpsa<-cdp3 |> filter(Region=="SA")
 
 
@@ -157,19 +157,19 @@ readDataSet<-function(n,drange) {
   dfdata<-read_csv(dataSets[n],show_col_types = FALSE) %>% 
     rename_with(~sub('date','Time',.x)) %>% 
     rename_with(~sub('  ',' ',.x)) 
-  print(paste0("LTIME1: ",length(dfdata$Time)))
+  #print(paste0("LTIME1: ",length(dfdata$Time)))
   
   flds<-findDemandColumns(dfdata)
-  str(drange[1])
-  str(dfdata$Time)
+  #str(drange[1])
+  #str(dfdata$Time)
   dftmp <- dfdata %>% filter(Time>=drange[1] & Time<=drange[2])
-  print(paste0("LTIME2: ",length(dfdata$Time)))
+  #print(paste0("LTIME2: ",length(dfdata$Time)))
   # the first time through this routine may have invalid drange data, because the widget isn't initialised ... so we ignore it
   if (length(dftmp$Time>0)) {
     dfdata <- dftmp 
   }
   
-  print(paste(flds))
+  #print(paste(flds))
   #print(paste(findDemandColumns(dfdata)))
   # print(colnames(dfdata))
   # A bit risky to just replace NAs
@@ -260,8 +260,8 @@ cols<-c(
 # between the generators and batteries
 #-----------------------------------------------------------------
 calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0,drange=c(ymd("1900-01-01"),ymd("1900-01-01"))) {
-  print(paste0("DRANGE: ",drange[1]," to ",drange[2]))
-  print(dataSets[dspick])
+  #print(paste0("DRANGE: ",drange[1]," to ",drange[2]))
+  #print(dataSets[dspick])
   gasmw<-ifelse(gaspeak>0,gaspeak*1000,0)
   dfout<-readDataSet(dspick,drange)
   batteryMaxCapacity<-bmax
@@ -620,7 +620,7 @@ server <- function(ui,input, output,session) {
       updateSliderInput(session,"ofac",max=comma3(row$ofac),step=0.25,min=1)
       d1<-values(dateLimits[dataSets[input$datasetpick]])[1][[1]] # nb.. members of the environment are in a list with 1 member
       d2<-values(dateLimits[dataSets[input$datasetpick]])[2][[1]]
-      str(d1)
+      #str(d1)
       updateDateRangeInput(session,"daterange",start=d1,end=d2,min=d1,max=d2)
       #cat(paste0("File: ",input$datasetpick," ->  ",dataSets[input$datasetpick],"\n"))
       
@@ -880,11 +880,17 @@ server <- function(ui,input, output,session) {
       dfsum<-gendfsum()
       #write_csv(dfsum,"xxx1.csv")
       dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh)
-      print(colnames(dfsum))
-      p<-dfsum |> ggplot(aes(x=Time))+
+      #print(colnames(dfsum))
+      
+      sss<-dfsum |> group_by(hod=hour(Time)) |> filter((hod>8)&(hod<19)) |> summarise(rat=mean(solarr)/mean(solaru))
+      #write_csv(sss,"sss.csv")
+      mx<-ceiling(max(sss$rat))
+      #tmp<-sss |> filter(!is.nan(hod)) 
+      #print(tmp)
+      p<-sss |> filter(!is.nan(hod)) |> ggplot(aes(x=hod,y=rat))+geom_line()+labs(title="Ratio of Rooftop to Utility solar",y="Ratio",x="Time of day")+ylim(0,mx)
         #geom_line(aes(y=solarr),color="blue")+
         #geom_line(aes(y=solaru),color="red")+ 
-        geom_line(aes(y=ifelse(solaru>0,ifelse(solarr/solaru<6,solarr/solaru,1),1)))+labs(title="Ratio of Rooftop to Utility solar",y="Ratio")
+        #geom_line(aes(y=ifelse(solaru>0,ifelse(solarr/solaru<6,solarr/solaru,1),1)))
       
       p +theme_bw()
     })
