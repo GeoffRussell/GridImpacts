@@ -55,13 +55,17 @@ cdpsa<-cdp3 |> filter(Region=="SA")
 # Datasets
 #-----------------------------------------------------
 dataSets<-c(
+  "(SA) WE 13 April 2025"="openNem-SA-13-4-25-7D.csv",
+  "(SA) WE 13 June 2025"="openNem-SA-13-6-25-7D.csv",
   "(VIC) WE 25 January 2024"="openNem-VIC-25-01-24-7D.csv",
   "(SA) WE 16 May 2024"="openNem-SA-16-05-24-7D.csv",
   "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
   "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
   "(SA) June 2024"="openNEMMerge-June-2024.csv",
-  "(SA) PE March 24 2025"="openNEMMerge-SA-24-03-2025-40D.csv",
-  "(QLD) PE March 24 2025"="openNEMMerge-QLD-24-03-2025-40D.csv",
+  "(SA) PE 24 March 2025"="openNEMMerge-SA-24-03-2025-40D.csv",
+  "(SA) PE 26 May 2025"="openNEMMerge-SA-26-05-2025-43D.csv",
+  "(QLD) PE 24 March 2025"="openNEMMerge-QLD-24-03-2025-40D.csv",
+  "(QLD) PE 26 May 2025"="openNEMMerge-QLD-26-05-2025-43D.csv",
   "(QLD) end of December 2024"="openNEMMerge-QLD-30-12-2024-19D.csv",
   "(NSW) end of December 2024"="openNEMMerge-NSW-30-12-2024-19D.csv", 
   "(SA) June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
@@ -72,12 +76,16 @@ dataSets<-c(
   "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles<-c(
-  "(SA) PE March 24 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) PE March 24 2025",
-  "(QLD) PE March 24 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) PE March 24 2025",
+  "(SA) WE 13 April 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 April 2025",
+  "(SA) WE 13 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 June 2025",
+  "(SA) PE 24 March 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 24 March 2025",
+  "(QLD) PE 24 March 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 24 March 2025",
+  "(QLD) PE 26 May 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 26 May 2025",
   "(NSW) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024", 
   "(QLD) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
   "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 25 Jan 2024",
   "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 16 May 2024",
+  "(SA) PE 26 May 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 26 May 2025",
   "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 16 May 2024",
   "(NEM) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(NEM) Week ending 16 May 2024",
   "(SA) June 2024"="Electricity renewable/demand/shortfall\n(SA) June 2024",
@@ -730,6 +738,8 @@ server <- function(ui,input, output,session) {
         dfsum$sumdblrenew<-roll_sum(dfsum$dblrenew/12,n=12*hrs,align="right",fill=0)
         dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
         r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
+        bMC<-input$bsize*input$bmult
+        print(bMC)
         df<-tibble(
           `Parameter`=c("Demand","Shortfall","Curtailment","Maximum power shortage (MW)","Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
@@ -740,7 +750,7 @@ server <- function(ui,input, output,session) {
                     paste0(comma(shortMW)," dispatchable MW"),
                     paste0(comma(bsup/1000)," GWh"),
                     paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
-                    paste0(comma(100*bsup/((bmax/12)*nperiods)),"%"),
+                    paste0(comma(100*bsup/((bMC/12)*nperiods)),"%"),
                     paste0(r$Time,": ",comma(-r$diff),"MWh"),
                     paste0(comma(gasMWh/1000)," GWh"),
                     paste0(comma(gasCap)," %"),
@@ -887,7 +897,15 @@ server <- function(ui,input, output,session) {
       mx<-ceiling(max(sss$rat))
       #tmp<-sss |> filter(!is.nan(hod)) 
       #print(tmp)
-      p<-sss |> filter(!is.nan(hod)) |> ggplot(aes(x=hod,y=rat))+geom_line()+labs(title="Ratio of Rooftop to Utility solar",y="Ratio",x="Time of day")+ylim(0,mx)
+      d1<-values(dateLimits[dataSets[input$datasetpick]])[1][[1]] # nb.. members of the environment are in a list with 1 member
+      d2<-values(dateLimits[dataSets[input$datasetpick]])[2][[1]]
+      ndays=interval(as.Date(d1),as.Date(d2)) %/% days(1)
+      #print(paste("NDays: " ,ndays))
+      #print(paste("D1: " ,d1))
+      #print(paste("D2: " ,d2))
+      st<-getState(input$datasetpick)
+      p<-sss |> filter(!is.nan(hod)) |> ggplot(aes(x=hod,y=rat))+geom_line()+
+        labs(title=paste0("Ratio of Rooftop to Utility solar\nIn ",st," over the period of ",ndays," days from ",as.Date(d1)," to ",as.Date(d2),"\nData: OpenNEM"),y="Ratio",x="Time of day")+ylim(0,mx)
         #geom_line(aes(y=solarr),color="blue")+
         #geom_line(aes(y=solaru),color="red")+ 
         #geom_line(aes(y=ifelse(solaru>0,ifelse(solarr/solaru<6,solarr/solaru,1),1)))
