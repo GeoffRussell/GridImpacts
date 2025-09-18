@@ -55,12 +55,15 @@ cdpsa<-cdp3 |> filter(Region=="SA")
 # Datasets
 #-----------------------------------------------------
 dataSets<-c(
+  "(SA) 3DE 27 June 2025"="openNem-SA-27-6-25-3D.csv",
   "(SA) WE 13 April 2025"="openNem-SA-13-4-25-7D.csv",
   "(SA) WE 13 June 2025"="openNem-SA-13-6-25-7D.csv",
   "(VIC) WE 25 January 2024"="openNem-VIC-25-01-24-7D.csv",
   "(SA) WE 16 May 2024"="openNem-SA-16-05-24-7D.csv",
   "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
   "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
+  "(NEM) PE 28 June 2025"="openNEMMerge-NEM-28-06-2025-31D.csv",
+  "(SA) PE 28 June 2025"="openNEMMerge-SA-28-06-2025-31D.csv",
   "(SA) June 2024"="openNEMMerge-June-2024.csv",
   "(SA) PE 24 March 2025"="openNEMMerge-SA-24-03-2025-40D.csv",
   "(SA) PE 26 May 2025"="openNEMMerge-SA-26-05-2025-43D.csv",
@@ -76,9 +79,12 @@ dataSets<-c(
   "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles<-c(
+  "(NEM) PE 28 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
+  "(SA) 3DE 27 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) 3 Days ending 27 June 2025",
   "(SA) WE 13 April 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 April 2025",
   "(SA) WE 13 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 June 2025",
   "(SA) PE 24 March 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 24 March 2025",
+  "(SA) PE 28 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 28 June 2025",
   "(QLD) PE 24 March 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 24 March 2025",
   "(QLD) PE 26 May 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 26 May 2025",
   "(NSW) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024", 
@@ -779,18 +785,23 @@ server <- function(ui,input, output,session) {
         print(meanwind)
         rollsum<-roll_sum(dfsum$wind/12,n=12*24*days,fill=0)
         mrollmin<-min(rollsum[rollsum>0])
+        mrollmax<-max(rollsum[rollsum>0])
         #print(rollsum)
         print(mrollmin)
         dfw<-tibble(
           ` `=c("Mean wind power (MW)",
                 "Daily average (GWh)",
                 paste0(lab," min (GWh)"),
-                "Percent"
+                paste0(lab," max (GWh)"),
+                "Percent (weekly min of weekly max)"
                 ),
           `Period`=c(comma(meanwind), 
                      comma((meanwind*24*days)/1000),
                      comma(mrollmin/1000),
-                     comma( 100*((mrollmin/1000)/((meanwind*24*days)/1000))))
+                     comma(mrollmax/1000),
+                     #comma( 100*((mrollmin/1000)/((meanwind*24*days)/1000)))
+                     comma( 100*(mrollmin/1000)/(mrollmax/1000))
+                     )
         )
         dfw |> gt() |> tab_header(title=paste0("Wind Averages ",comma(days)," days")) |> tab_options(table.width=pct(100),
                                                                            table.background.color=tbgcolor,
