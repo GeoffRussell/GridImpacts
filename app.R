@@ -54,86 +54,95 @@ cdpsa<-cdp3 |> filter(Region=="SA")
 #-----------------------------------------------------
 # Datasets
 #-----------------------------------------------------
-dataSets<-c(
-  "(SA) 3DE 27 June 2025"="openNem-SA-27-6-25-3D.csv",
-  "(SA) WE 13 April 2025"="openNem-SA-13-4-25-7D.csv",
-  "(SA) WE 13 June 2025"="openNem-SA-13-6-25-7D.csv",
-  "(VIC) WE 25 January 2024"="openNem-VIC-25-01-24-7D.csv",
-  "(SA) WE 16 May 2024"="openNem-SA-16-05-24-7D.csv",
-  "(VIC) WE 16 May 2024"="openNem-VIC-16-05-24-7D.csv",
-  "(NEM) WE 16 May 2024"="openNem-NEM-16-05-24-7D.csv",
-  "(NEM) PE 28 June 2025"="openNEMMerge-NEM-28-06-2025-31D.csv",
-  "(SA) PE 28 June 2025"="openNEMMerge-SA-28-06-2025-31D.csv",
-  "(SA) June 2024"="openNEMMerge-June-2024.csv",
-  "(SA) PE 24 March 2025"="openNEMMerge-SA-24-03-2025-40D.csv",
-  "(SA) PE 26 May 2025"="openNEMMerge-SA-26-05-2025-43D.csv",
-  "(QLD) PE 24 March 2025"="openNEMMerge-QLD-24-03-2025-40D.csv",
-  "(QLD) PE 26 May 2025"="openNEMMerge-QLD-26-05-2025-43D.csv",
-  "(QLD) end of December 2024"="openNEMMerge-QLD-30-12-2024-19D.csv",
-  "(NSW) end of December 2024"="openNEMMerge-NSW-30-12-2024-19D.csv", 
-  "(SA) June 2024 (1st week only)"="openNEMMerge-June-1stWeek-2024.csv",
-  "(SA) WE 30 January 2024"="openNem-SA-30-01-24-7D.csv",
-  "(SA) WE 30 November 2023"="opennem-30-11-2023sa5.csv",
-  "(SA) First heatwave, Dec 2019"="openNem-SA-21-12-19-7D.csv",
-  "(SA) Second heatwave, Dec 2019"="openNem-SA-28-12-19-7D.csv",
-  "(SA) March heatwave, 2024"="openNem-SA-12-03-24-7D.csv"
+dataSets <- c(
+  "(SA) PE 20 Nov 2025" = "openNEMMerge-SA-20-11-2025-18D.csv",
+  "(SA) 3DE 27 June 2025" = "openNem-SA-27-6-25-3D.csv",
+  "(SA) WE 13 April 2025" = "openNem-SA-13-4-25-7D.csv",
+  "(SA) WE 13 June 2025" = "openNem-SA-13-6-25-7D.csv",
+  "(VIC) WE 25 January 2024" = "openNem-VIC-25-01-24-7D.csv",
+  "(SA) WE 16 May 2024" = "openNem-SA-16-05-24-7D.csv",
+  "(VIC) WE 16 May 2024" = "openNem-VIC-16-05-24-7D.csv",
+  "(NEM) WE 16 May 2024" = "openNem-NEM-16-05-24-7D.csv",
+  "(NEM) PE 28 June 2025" = "openNEMMerge-NEM-28-06-2025-31D.csv",
+  "(SA) PE 28 June 2025" = "openNEMMerge-SA-28-06-2025-31D.csv",
+  "(SA) June 2024" = "openNEMMerge-June-2024.csv",
+  "(SA) PE 24 March 2025" = "openNEMMerge-SA-24-03-2025-40D.csv",
+  "(SA) PE 26 May 2025" = "openNEMMerge-SA-26-05-2025-43D.csv",
+  "(QLD) PE 24 March 2025" = "openNEMMerge-QLD-24-03-2025-40D.csv",
+  "(QLD) PE 26 May 2025" = "openNEMMerge-QLD-26-05-2025-43D.csv",
+  "(QLD) end of December 2024" = "openNEMMerge-QLD-30-12-2024-19D.csv",
+  "(NSW) end of December 2024" = "openNEMMerge-NSW-30-12-2024-19D.csv",
+  "(SA) June 2024 (1st week only)" = "openNEMMerge-June-1stWeek-2024.csv",
+  "(SA) WE 30 January 2024" = "openNem-SA-30-01-24-7D.csv",
+  "(SA) WE 30 November 2023" = "opennem-30-11-2023sa5.csv",
+  "(SA) First heatwave, Dec 2019" = "openNem-SA-21-12-19-7D.csv",
+  "(SA) Second heatwave, Dec 2019" = "openNem-SA-28-12-19-7D.csv",
+  "(SA) March heatwave, 2024" = "openNem-SA-12-03-24-7D.csv"
 )
-dataSetTitles<-c(
-  "(NEM) PE 28 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
-  "(SA) 3DE 27 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) 3 Days ending 27 June 2025",
-  "(SA) WE 13 April 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 April 2025",
-  "(SA) WE 13 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 June 2025",
-  "(SA) PE 24 March 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 24 March 2025",
-  "(SA) PE 28 June 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 28 June 2025",
-  "(QLD) PE 24 March 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 24 March 2025",
-  "(QLD) PE 26 May 2025"="Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 26 May 2025",
-  "(NSW) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024", 
-  "(QLD) end of December 2024"="Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
-  "(VIC) WE 25 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 25 Jan 2024",
-  "(SA) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 16 May 2024",
-  "(SA) PE 26 May 2025"="Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 26 May 2025",
-  "(VIC) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 16 May 2024",
-  "(NEM) WE 16 May 2024"="Electricity renewable/demand/curtailment/shortfall\n(NEM) Week ending 16 May 2024",
-  "(SA) June 2024"="Electricity renewable/demand/shortfall\n(SA) June 2024",
-  "(SA) June 2024 (1st week only)"="Electricity renewable/demand/shortfall\n(SA) 1st Week June 2024",
-  "(SA) WE 30 January 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 Jan 2024",
-  "(SA) WE 30 November 2023"="Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 November 2023",
-  "(SA) First heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 21 December 2019",
-  "(SA) Second heatwave, Dec 2019"="Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 28 December 2019",
-  "(SA) March heatwave, 2024"="Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 12 March 2024"
+dataSetTitles <- c(
+  "(NEM) PE 20 Nov 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 20 November 2025",
+  "(NEM) PE 28 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
+  "(SA) 3DE 27 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) 3 Days ending 27 June 2025",
+  "(SA) WE 13 April 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 April 2025",
+  "(SA) WE 13 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 June 2025",
+  "(SA) PE 24 March 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 24 March 2025",
+  "(SA) PE 28 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 28 June 2025",
+  "(QLD) PE 24 March 2025" = "Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 24 March 2025",
+  "(QLD) PE 26 May 2025" = "Electricity renewable/demand/curtailment/shortfall\n(QLD) Period ending 26 May 2025",
+  "(NSW) end of December 2024" = "Electricity renewable/demand/curtailment/shortfall\n(NSW) 30 December 2024",
+  "(QLD) end of December 2024" = "Electricity renewable/demand/curtailment/shortfall\n(Queensland) 30 December 2024",
+  "(VIC) WE 25 January 2024" = "Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 25 Jan 2024",
+  "(SA) WE 16 May 2024" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 16 May 2024",
+  "(SA) PE 26 May 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 26 May 2025",
+  "(VIC) WE 16 May 2024" = "Electricity renewable/demand/curtailment/shortfall\n(VIC) Week ending 16 May 2024",
+  "(NEM) WE 16 May 2024" = "Electricity renewable/demand/curtailment/shortfall\n(NEM) Week ending 16 May 2024",
+  "(SA) June 2024" = "Electricity renewable/demand/shortfall\n(SA) June 2024",
+  "(SA) June 2024 (1st week only)" = "Electricity renewable/demand/shortfall\n(SA) 1st Week June 2024",
+  "(SA) WE 30 January 2024" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 Jan 2024",
+  "(SA) WE 30 November 2023" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 November 2023",
+  "(SA) First heatwave, Dec 2019" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 21 December 2019",
+  "(SA) Second heatwave, Dec 2019" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 28 December 2019",
+  "(SA) March heatwave, 2024" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 12 March 2024"
 )
 #-----------------------------------------------------
 # End Datasets
 #-----------------------------------------------------
 # Check Datasets and find the date ranges of the data in each
 #-----------------------------------------------------
-dateLimits<-hash()
+dateLimits <- hash()
 for (i in dataSets) {
   if (!file.exists(i)) {
-    cat("Missing: ",i,"\n") 
+    cat("Missing: ", i, "\n")
   }
-  tmp=read_csv(i,show_col_types = FALSE)
-  dateLimits[i]=list((tmp$date)[1],(tmp$date)[length(tmp$date)])
-#  cat(paste0("DDDD",(tmp$date)[1],"\n"))
-#  cat(paste0("EEEE",(tmp$date)[length(tmp$date)],"\n"))
-} 
+  tmp <- read_csv(i, show_col_types = FALSE)
+  dateLimits[i] <- list((tmp$date)[1], (tmp$date)[length(tmp$date)])
+  #  cat(paste0("DDDD",(tmp$date)[1],"\n"))
+  #  cat(paste0("EEEE",(tmp$date)[length(tmp$date)],"\n"))
+}
+
 #-----------------------------------------------------
 # Define various constants and functions used to process the data
 #-----------------------------------------------------
 # The columns output by openNEM vary between states and will change over time. Hopefully this function will find the right ones!
 #-----------------------------------------------------
+# The latest change to openNEM format is to include curtailment data
+# in columns after Rooftop solar
+#
 findDemandColumns<-function(df) {
   l<-tibble()
   for(n in colnames(df)) {
+    if (grepl("Temperature|Emissions",n)) { 
+      break;
+    }
     if (n=="Time") {         # we ignore the Time and Exports fields 
       next;
     }
     if (!grepl("Exports|Charging",n)) {
       l=bind_rows(l,tibble(flds=c(n)))
     }
-    if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
-      break;
-    }
+    #if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
+    #  break;
+    #}
   }
   l$flds
 }
@@ -174,6 +183,7 @@ readDataSet<-function(n,drange) {
   #print(paste0("LTIME1: ",length(dfdata$Time)))
   
   flds<-findDemandColumns(dfdata)
+  print(paste(flds))
   #str(drange[1])
   #str(dfdata$Time)
   dftmp <- dfdata %>% filter(Time>=drange[1] & Time<=drange[2])
@@ -219,31 +229,31 @@ findNightTimeBands<-function(df) {
 #-----------------------------------------------------------------
 # set up labels and colours for the plots
 #-----------------------------------------------------------------
-colswind<-c(
-  "demand"="brown",
-  "wind"="forestgreen"
+colswind <- c(
+  "demand" = "brown",
+  "wind" = "forestgreen"
 )
-labswind<-c(
+labswind <- c(
   "Demand",
   "Wind"
 )
-colsshort<-c(
-  "renew"="grey40",
-  "dblrenew"="cyan",
-  "demand"="brown"
+colsshort <- c(
+  "renew" = "grey40",
+  "dblrenew" = "cyan",
+  "demand" = "brown"
 )
-labsshort<-c(
+labsshort <- c(
   "Overbuild",
   "Demand",
   "Wind+Solar"
 )
-colsbreaks<-c( "dblrenew", "demand", "renew","wind")
-colslabels<-c( "Overbuild", "Demand", "Wind+Solar","Wind")
-colslevels<-c(
-  "dblrenew"="cyan",
-  "demand"="brown",
-  "renew"="grey40",
-  "wind"="forestgreen"
+colsbreaks <- c("dblrenew", "demand", "renew", "wind")
+colslabels <- c("Overbuild", "Demand", "Wind+Solar", "Wind")
+colslevels <- c(
+  "dblrenew" = "cyan",
+  "demand" = "brown",
+  "renew" = "grey40",
+  "wind" = "forestgreen"
 )
 
 colsfacilities<-c(
