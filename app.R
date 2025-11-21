@@ -741,6 +741,7 @@ server <- function(ui,input, output,session) {
         totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
         sh<-dfsum %>% summarise(max(cumShortMWh))
         curt<-dfsum %>% summarise(max(cumThrowOutMWh))
+        curtin<-dfsum %>% summarise(sum(windDump+solarDump)/12)
         bsup<-dfsum %>% summarise(sum(batterySupplied))
         bmax<-dfsum %>% summarise(max(batterySupplied*12))
         row<-storTable |> filter(State==v$state)
@@ -764,12 +765,13 @@ server <- function(ui,input, output,session) {
         bMC<-input$bsize*input$bmult
         print(bMC)
         df<-tibble(
-          `Parameter`=c("Demand","Shortfall","Curtailment","Maximum power shortage (MW)","Battery energy supplied (MWh)",
+          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Theoretical)","Maximum power shortage (MW)","Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
                         "Battery capacity factor","Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide"),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
                     paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
-                    paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"%)"),
+                    paste0(comma(curtin/1000)," GWh (",comma(100*curtin/totremwh),"% of RE)"),
+                    paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"% of RE)"),
                     paste0(comma(shortMW)," dispatchable MW"),
                     paste0(comma(bsup/1000)," GWh"),
                     paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
