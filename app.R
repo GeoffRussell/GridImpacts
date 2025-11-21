@@ -80,7 +80,7 @@ dataSets <- c(
   "(SA) March heatwave, 2024" = "openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles <- c(
-  "(NEM) PE 20 Nov 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 20 November 2025",
+  "(SA) PE 20 Nov 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 20 November 2025",
   "(NEM) PE 28 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
   "(SA) 3DE 27 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) 3 Days ending 27 June 2025",
   "(SA) WE 13 April 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 13 April 2025",
@@ -483,7 +483,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.98+costs)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.99+costs)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -765,7 +765,7 @@ server <- function(ui,input, output,session) {
         bMC<-input$bsize*input$bmult
         print(bMC)
         df<-tibble(
-          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Theoretical)","Maximum power shortage (MW)","Battery energy supplied (MWh)",
+          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Minimum)","Maximum power shortage (MW)","Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
                         "Battery capacity factor","Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide"),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
@@ -944,7 +944,10 @@ server <- function(ui,input, output,session) {
     })
     output$shortfall <- renderPlot({
       dfsum<-gendfsum()
-      #write_csv(dfsum,"xxx1.csv")
+      dfsum <- dfsum %>% mutate(cumCurtAct=cumsum((windDump+solarDump)/12))
+      actCurtailed<-max(dfsum$cumCurtAct)
+      #xxtmp<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,windDump,solarDump,cumCurtAct)
+      #write_csv(xxtmp,"xxx1.csv")
       dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh)
       maxsupply=max(dfsum$dblrenew)
       bl<-ifelse((input$blmult*input$baseloadsize)>0,paste0("BL",input$blmult*input$baseloadsize,"MW"),"nobl")
@@ -954,6 +957,7 @@ server <- function(ui,input, output,session) {
       ff<-gsub(" ","",input$datasetpick)
       fname=paste0("dfsum-",bl,"-",bsz,"-",ovfac,"-",ff,"-",gp,".csv")
       #write_csv(dfsum,fname)
+      write_csv(dfcumshort,fname)
       maxshort<-max(dfcumshort$cumShortMWh)
       maxcurt<-max(dfcumshort$cumThrowOutMWh)
       maxdemand<-max(dfcumshort$demand)
@@ -1023,8 +1027,11 @@ server <- function(ui,input, output,session) {
       annotation=tibble(
           x=c(lasttime,lasttime),
           y=c(ay,ay*0.91),
-          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Curtailed: ",comma(maxcurt/1000)," GWh"))
+          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Minimum curtailment: ",comma(maxcurt/1000)," GWh"))
       ) 
+      if (actCurtailed) {
+        annotation<-bind_rows(annotation,tibble(x=lasttime,y=ay*0.82,label=c(paste0("Actual curtailment: ",comma(actCurtailed/1000)," GWh"))))
+      }
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
         ptheme +
