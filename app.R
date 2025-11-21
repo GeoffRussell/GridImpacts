@@ -131,18 +131,18 @@ for (i in dataSets) {
 findDemandColumns<-function(df) {
   l<-tibble()
   for(n in colnames(df)) {
-    if (grepl("Temperature|Emissions",n)) { 
-      break;
-    }
+    #if (grepl("Temperature|Emissions",n)) { 
+    #  break;
+    #}
     if (n=="Time") {         # we ignore the Time and Exports fields 
       next;
     }
     if (!grepl("Exports|Charging",n)) {
       l=bind_rows(l,tibble(flds=c(n)))
     }
-    #if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
-    #  break;
-    #}
+    if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
+      break;
+    }
   }
   l$flds
 }
@@ -296,7 +296,13 @@ calc<-function(bmax,ofac,icsize=0,dspick,baseloadsize=0,gaspeak=0,drange=c(ymd("
     wind=`Wind - MW`,
     solar=`Solar (Rooftop) - MW`+`Solar (Utility) - MW`, 
     solaru=`Solar (Utility) - MW`,
-    solarr=`Solar (Rooftop) - MW`)
+    solarr=`Solar (Rooftop) - MW`,
+    solarDump=if(exists('Solar (Utility) (Curtailment) - MW')) 
+      `Solar (Utility) (Curtailment) - MW` else 0,
+    windDump=if(exists('Wind (Curtailment) - MW')) 
+      `Wind (Curtailment) - MW` else 0,
+  )
+  write_csv(dfsum,"yyy.csv")
   
   if (isnem(dspick)) {
     dfsum<-dfsum %>% mutate(renew=wind+solar,dblrenew=ofac*renew)
@@ -652,7 +658,8 @@ server <- function(ui,input, output,session) {
     gendfsum<-reactive({
       print(input$datasetpick)
       bstatus<-calc(input$bsize*input$bmult,input$ofac,0,input$datasetpick,input$blmult*input$baseloadsize,input$gaspeak*input$gasmult,input$daterange)
-      dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery) 
+      dfile<-bstatus %>%  mutate(diffE=(dblrenew-demand)/12) %>% 
+        select(Time,dblrenew,demand,diffE,batteryStatus,batterySupplied,shortFall,addedToBattery,windDump,solarDump) 
       write_csv(dfile,"bcalc-output.csv")
       bstatus
     })
