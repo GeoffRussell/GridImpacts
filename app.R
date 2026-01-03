@@ -775,7 +775,7 @@ server <- function(ui,input, output,session) {
                     paste0(comma(shortMW)," dispatchable MW"),
                     paste0(comma(bsup/1000)," GWh"),
                     paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
-                    paste0(comma(100*bsup/((bMC/12)*nperiods)),"%"),
+                    paste0(comma(100*bsup/((bMC/12)*(nperiods/2))),"% (supplied power/max power for half the time)"),
                     paste0(r$Time,": ",comma(-r$diff),"MWh"),
                     paste0(comma(gasMWh/1000)," GWh"),
                     paste0(comma(gasCap)," %"),
