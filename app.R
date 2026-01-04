@@ -66,6 +66,7 @@ dataSets <- c(
   "(NEM) PE 28 June 2025" = "openNEMMerge-NEM-28-06-2025-31D.csv",
   "(SA) PE 28 June 2025" = "openNEMMerge-SA-28-06-2025-31D.csv",
   "(SA) June 2024" = "openNEMMerge-June-2024.csv",
+  "(SA) PE 3 Jan 2026" = "openNEMMerge-SA-03-01-2026-24D.csv",
   "(SA) PE 24 March 2025" = "openNEMMerge-SA-24-03-2025-40D.csv",
   "(SA) PE 26 May 2025" = "openNEMMerge-SA-26-05-2025-43D.csv",
   "(QLD) PE 24 March 2025" = "openNEMMerge-QLD-24-03-2025-40D.csv",
@@ -80,6 +81,7 @@ dataSets <- c(
   "(SA) March heatwave, 2024" = "openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles <- c(
+  "(SA) PE 3 Jan 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 3 January 2026",
   "(SA) PE 20 Nov 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 20 November 2025",
   "(NEM) PE 28 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
   "(SA) 3DE 27 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) 3 Days ending 27 June 2025",
