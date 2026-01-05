@@ -528,7 +528,8 @@ ui <- function(request) {
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
                                                   checkboxInput("showCurtailed",label="Show curtailed energy (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
-                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE)
+                                                  checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
+                                                  checkboxInput("showBatteryCF",label="Show battery capacity factor (actual/min) (%)",value=FALSE)
                                            )
                                          ),
                                          fluidRow(
@@ -765,25 +766,33 @@ server <- function(ui,input, output,session) {
         dfsum$sumdemand<-roll_sum(dfsum$demand/12,n=12*hrs,align="right",fill=0)
         r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
         bMC<-input$bsize*input$bmult
+        maxBat<-(bMC/12)*(nperiods/2)
         print(bMC)
         df<-tibble(
-          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Minimum)","Maximum power shortage (MW)","Battery energy supplied (MWh)",
+          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Minimum)","Maximum power shortage (MW)",
+                        "Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide",
+                        "Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
-                        "Battery capacity factor","Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide"),
+                        "Battery capacity factor (model)"
+                        ),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
                     paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
                     paste0(comma(curtin/1000)," GWh (",comma(100*curtin/totremwh),"% of RE)"),
                     paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"% of RE)"),
                     paste0(comma(shortMW)," dispatchable MW"),
-                    paste0(comma(bsup/1000)," GWh"),
-                    paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
-                    paste0(comma(100*bsup/((bMC/12)*(nperiods/2))),"% (supplied power/max power for half the time)"),
                     paste0(r$Time,": ",comma(-r$diff),"MWh"),
                     paste0(comma(gasMWh/1000)," GWh"),
                     paste0(comma(gasCap)," %"),
-                    paste0(comma(gasMWh*gasintensity)," tonnes")
+                    paste0(comma(gasMWh*gasintensity)," tonnes"),
+                    paste0(comma(bsup/1000)," GWh"),
+                    paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
+                    paste0(comma(100*bsup/maxBat),"% (supplied power/max power for half the time)")
                     )
         )
+        if (input$showBatteryCF) {
+          df<-bind_rows(df,tibble(`Parameter`="Battery capacity factor (actual)",`Value`=paste0(comma(100*sum(dfsum$`Battery (Discharging) - MW`/12)/maxBat),"%")))
+        }  
+        
         df |> gt() |> tab_header(title="Output results") |> tab_options(table.width=pct(100),
                                                                            table.background.color=tbgcolor,
                                                                            table.font.color=tfgcolor,
