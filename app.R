@@ -18,6 +18,7 @@ library(hash)
 
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 comma3<-function(x) prettyNum(signif(x,digits=3),big.mark=",")
+comma1<-function(x) prettyNum(round(x,digits=1),big.mark=",")
 markdownFile<-function(filename) {
   t<-read_file(pipe(paste0("cat m4defsnull.txt ",filename," | m4 ")))
   #t<-read_file(pipe(paste0("cat m4defs.txt ",filename," | m4 ")))
@@ -529,7 +530,7 @@ ui <- function(request) {
                                                   checkboxInput("showCurtailed",label="Show curtailed energy (GWh)",value=FALSE),
                                                   checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
                                                   checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
-                                                  checkboxInput("showBatteryCF",label="Show battery capacity factor (actual/min) (%)",value=FALSE)
+                                                  checkboxInput("showBatteryCF",label="Show battery capacity factor (Actual/Model) (%)",value=FALSE)
                                            )
                                          ),
                                          fluidRow(
@@ -769,11 +770,11 @@ server <- function(ui,input, output,session) {
         maxBat<-(bMC/12)*(nperiods/2)
         print(bMC)
         df<-tibble(
-          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Minimum)","Maximum power shortage (MW)",
+          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Model)","Maximum power shortage (MW)",
                         "Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide",
                         "Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
-                        "Battery capacity factor (model)"
+                        "Battery capacity factor (Model)"
                         ),
           `Value`=c(paste0(comma(totdemand/1000)," GWh"),
                     paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"),
@@ -786,11 +787,11 @@ server <- function(ui,input, output,session) {
                     paste0(comma(gasMWh*gasintensity)," tonnes"),
                     paste0(comma(bsup/1000)," GWh"),
                     paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"),
-                    paste0(comma(100*bsup/maxBat),"% (supplied power/max power for half the time)")
+                    paste0(comma1(100*bsup/maxBat),"% (supplied power/max power for half the time)")
                     )
         )
         if (input$showBatteryCF) {
-          df<-bind_rows(df,tibble(`Parameter`="Battery capacity factor (actual)",`Value`=paste0(comma(100*sum(dfsum$`Battery (Discharging) - MW`/12)/maxBat),"%")))
+          df<-bind_rows(df,tibble(`Parameter`="Battery capacity factor (Actual)",`Value`=paste0(comma1(100*sum(dfsum$`Battery (Discharging) - MW`/12)/maxBat),"%")))
         }  
         
         df |> gt() |> tab_header(title="Output results") |> tab_options(table.width=pct(100),
@@ -1038,7 +1039,7 @@ server <- function(ui,input, output,session) {
       annotation=tibble(
           x=c(lasttime,lasttime),
           y=c(ay,ay*0.91),
-          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Minimum curtailment: ",comma(maxcurt/1000)," GWh"))
+          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Model curtailment: ",comma(maxcurt/1000)," GWh"))
       ) 
       if (actCurtailed) {
         annotation<-bind_rows(annotation,tibble(x=lasttime,y=ay*0.82,label=c(paste0("Actual curtailment: ",comma(actCurtailed/1000)," GWh"))))
