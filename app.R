@@ -1001,7 +1001,8 @@ server <- function(ui,input, output,session) {
       thecols=colsshort
       thelabs=labsshort
       dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","renew","dblrenew"),names_to="Level",values_to="MW") 
-      thetitle=dataSetTitles[input$datasetpick]
+      thetitle=paste0(dataSetTitles[input$datasetpick],"\nBattery: ",comma1(input$bsize*input$bmult),"MWh, Overbuild factor: ",comma1(input$ofac))
+      
       if (input$showWindDemand) { # we include the curtailed wind in here
         #dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
         dfcs<-dfcumshort %>% mutate(wind=wind+windDump) |> pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
