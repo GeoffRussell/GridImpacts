@@ -188,7 +188,7 @@ readDataSet<-function(n,drange) {
   #print(paste0("LTIME1: ",length(dfdata$Time)))
   
   flds<-findDemandColumns(dfdata)
-  print(paste(flds))
+  if (dotrace) { print(paste(flds)) }
   #str(drange[1])
   #str(dfdata$Time)
   dftmp <- dfdata %>% filter(Time>=drange[1] & Time<=drange[2])
@@ -488,7 +488,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.99+costs)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.100+costs)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -770,9 +770,10 @@ server <- function(ui,input, output,session) {
         r<-dfsum %>% select(Time,sumdblrenew,sumdemand,diff) %>% slice_min(diff)
         bMC<-input$bsize*input$bmult
         maxBat<-(bMC/12)*(nperiods/2)
+        if (dotrace) {
         print(bMC)
-        print(curt)
-        print(curtin)
+        print(paste0("Curtailed Model:",curt))
+        print(paste0("Curtailed Actual:",curtin))
         print(paste0(comma(totdemand/1000)," GWh"))
         print(paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"))
         print(paste0(comma(curtin/1000)," GWh (",comma(100*curtin/totremwh),"% of RE)"))
@@ -785,6 +786,7 @@ server <- function(ui,input, output,session) {
         print(paste0(comma(bsup/1000)," GWh"))
         print(paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"))
         print(paste0(comma1(100*bsup/maxBat),"% (supplied power/max power for half the time)"))
+        }
         df<-tibble(
           `Parameter`=c("Demand","Shortfall",
                         "Curtailment (Actual)",
