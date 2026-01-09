@@ -1070,7 +1070,7 @@ server <- function(ui,input, output,session) {
         annotation<-bind_rows(annotation,tibble(x=lasttime,y=ay*0.82,label=c(paste0("Actual curtailment: ",comma(actCurtailed/1000)," GWh"))))
       }
       p<-dfcs %>% ggplot() + 
-        geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.5) +  
+        geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.6) +  
         ptheme +
         {if (input$showShort)
           geom_line(aes(x=Time,y=cumShortMWh*coef/1000,linetype="dashed"),data=dfsum)
@@ -1098,7 +1098,7 @@ server <- function(ui,input, output,session) {
         }+
         geom_rect(aes(xmin=t1,xmax=t2,ymin=0,ymax=Inf),data=nightbands,alpha=0.2)+
         labs(color="Supply/Demand (MW)",title=thetitle)+
-        scale_color_manual(breaks=colsbreaks,labels=colslabels,values=colslevels)+
+        scale_color_manual(name="Supply/Demand (MW)",breaks=colsbreaks,labels=colslabels,values=colslevels)+
         scale_linetype_manual(name="Other-measures",labels=lab,values=val)+
         geom_text(aes(x=x,y=y,label=label,family="Times",fontface="bold"),color="blue",data=annotation,hjust=1,size=8)+
         scale_y_continuous(
