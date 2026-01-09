@@ -79,7 +79,7 @@ dataSets <- c(
   "(SA) June 2024 (1st week only)" = "openNEMMerge-June-1stWeek-2024.csv",
   "(SA) WE 30 January 2024" = "openNem-SA-30-01-24-7D.csv",
   "(SA) WE 30 November 2023" = "opennem-30-11-2023sa5.csv",
-  "(SA) Heatwave-to-9Jan 2026" = "openNem-SA-9-1-26-7D.csv",
+  "(SA) Heatwave-to-9th Jan 2026" = "openNem-SA-9-1-26-7D.csv",
   "(SA) First heatwave, Dec 2019" = "openNem-SA-21-12-19-7D.csv",
   "(SA) Second heatwave, Dec 2019" = "openNem-SA-28-12-19-7D.csv",
   "(SA) March heatwave, 2024" = "openNem-SA-12-03-24-7D.csv"
@@ -106,7 +106,7 @@ dataSetTitles <- c(
   "(SA) June 2024 (1st week only)" = "Electricity renewable/demand/shortfall\n(SA) 1st Week June 2024",
   "(SA) WE 30 January 2024" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 Jan 2024",
   "(SA) WE 30 November 2023" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 30 November 2023",
-  "(SA) Heatwave-to-9Jan 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave WE 9 Jan 2026",
+  "(SA) Heatwave-to-9th Jan 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave WE 9 Jan 2026",
   "(SA) First heatwave, Dec 2019" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 21 December 2019",
   "(SA) Second heatwave, Dec 2019" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 28 December 2019",
   "(SA) March heatwave, 2024" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Heatwave, WE 12 March 2024"
@@ -984,7 +984,7 @@ server <- function(ui,input, output,session) {
       actCurtailed<-max(dfsum$cumCurtAct)
       #xxtmp<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,windDump,solarDump,cumCurtAct)
       #write_csv(xxtmp,"xxx1.csv")
-      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh)
+      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,shortFall)
       maxsupply=max(dfsum$dblrenew)
       bl<-ifelse((input$blmult*input$baseloadsize)>0,paste0("BL",input$blmult*input$baseloadsize,"MW"),"nobl")
       bsz<-ifelse((input$bmult*input$bsize)>0,paste0("BATT",comma(input$bsize*input$bmult),"MW"),"nobatt")
@@ -1090,7 +1090,7 @@ server <- function(ui,input, output,session) {
           geom_col(aes(x=Time,y=gasMWout,fill="blue"),alpha=0.2,data=dfsum)
         }+
         {if (input$showShort)  
-          geom_col(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.7,data=dfsum)
+          geom_area(aes(x=Time,y=shortFall*12,fill="orange"),alpha=0.7,data=dfsum)
         }+
         {if (input$showShort)  
           scale_fill_manual(name="Shortfall",labels=ll,values=vv)
