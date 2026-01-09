@@ -16,6 +16,8 @@ library(bslib)
 library(bsicons)
 library(hash)
 
+dotrace<-FALSE
+
 comma<-function(x) prettyNum(signif(x,digits=4),big.mark=",")
 comma3<-function(x) prettyNum(signif(x,digits=3),big.mark=",")
 comma1<-function(x) prettyNum(round(x,digits=1),big.mark=",")
@@ -133,20 +135,20 @@ for (i in dataSets) {
 #
 findDemandColumns<-function(df) {
   l<-tibble()
+  if (dotrace) { print(paste0("Number of fields:",length(colnames(df)))) }
   for(n in colnames(df)) {
-    #if (grepl("Temperature|Emissions",n)) { 
-    #  break;
-    #}
+    if (dotrace) { print(paste0("Field: ",n," ")) }
     if (n=="Time") {         # we ignore the Time and Exports fields 
       next;
     }
-    if (!grepl("Exports|Charging",n)) {
+    if (!grepl("Charging|Temperature|Price",n)) {
       l=bind_rows(l,tibble(flds=c(n)))
     }
-    if (grepl("Rooftop",n)) { # last relevant field is Rooftop PV
+    if (grepl("Temperature",n)) { # last relevant field is Rooftop PV
       break;
     }
   }
+  if (dotrace) { print(paste0("\n")) }
   l$flds
 }
 #-------------------------------------------------------------------------------------------------------
@@ -769,9 +771,27 @@ server <- function(ui,input, output,session) {
         bMC<-input$bsize*input$bmult
         maxBat<-(bMC/12)*(nperiods/2)
         print(bMC)
+        print(curt)
+        print(curtin)
+        print(paste0(comma(totdemand/1000)," GWh"))
+        print(paste0(comma(sh/1000)," GWh (wind+solar+batteries=",comma((totdemand-sh)/totdemand*100),"%)"))
+        print(paste0(comma(curtin/1000)," GWh (",comma(100*curtin/totremwh),"% of RE)"))
+        print(paste0(comma(curt/1000)," GWh (",comma(100*curt/totremwh),"% of RE)"))
+        print(paste0(comma(shortMW)," dispatchable MW"))
+        print(paste0(r$Time,": ",comma(-r$diff),"MWh"))
+        print(paste0(comma(gasMWh/1000)," GWh"))
+        print(paste0(comma(gasCap)," %"))
+        print(paste0(comma(gasMWh*gasintensity)," tonnes"))
+        print(paste0(comma(bsup/1000)," GWh"))
+        print(paste0(comma(bmax)," MW  (ISP max in 2050 ",comma(row$MaxPower[1]),"MW)"))
+        print(paste0(comma1(100*bsup/maxBat),"% (supplied power/max power for half the time)"))
         df<-tibble(
-          `Parameter`=c("Demand","Shortfall","Curtailment (Actual)","Curtailment (Model)","Maximum power shortage (MW)",
-                        "Max 8hr shortage end time","Gas output","Gas capacity factor","Carbon dioxide",
+          `Parameter`=c("Demand","Shortfall",
+                        "Curtailment (Actual)",
+                        "Curtailment (Model)",
+                        "Maximum power shortage (MW)",
+                        "Max 8hr shortage end time","Gas output",
+                        "Gas capacity factor","Carbon dioxide",
                         "Battery energy supplied (MWh)",
                         "Maximum battery power (MW)",
                         "Battery capacity factor (Model)"
