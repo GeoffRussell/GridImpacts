@@ -532,7 +532,7 @@ ui <- function(request) {
                                            column(width=4,
                                                   checkboxInput("showShort",label="Show shortfall (GWh)",value=TRUE),
                                                   checkboxInput("showCurtailed",label="Show curtailed energy (GWh)",value=FALSE),
-                                                  checkboxInput("showWindDemand",label="Show wind vs demand",value=FALSE),
+                                                  checkboxInput("showWindDemand",label="Show wind (inc curtailed) vs demand",value=FALSE),
                                                   checkboxInput("showBatteryStatus",label="Show battery charge level (%)",value=FALSE),
                                                   checkboxInput("showBatteryCF",label="Show battery capacity factor (Actual/Model) (%)",value=FALSE)
                                            )
@@ -955,7 +955,7 @@ server <- function(ui,input, output,session) {
     output$solarratio <- renderPlot({
       dfsum<-gendfsum()
       #write_csv(dfsum,"xxx1.csv")
-      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh)
+      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,windDump)
       #print(colnames(dfsum))
       
       sss<-dfsum |> group_by(hod=hour(Time)) |> filter((hod>8)&(hod<19)) |> summarise(rat=mean(solarr)/mean(solaru))
@@ -984,7 +984,7 @@ server <- function(ui,input, output,session) {
       actCurtailed<-max(dfsum$cumCurtAct)
       #xxtmp<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,windDump,solarDump,cumCurtAct)
       #write_csv(xxtmp,"xxx1.csv")
-      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,shortFall)
+      dfcumshort<-dfsum %>% select(Time,batteryStatus,supply,wind,demand,cumShortMWh,maxShortMW,renew,dblrenew,cumThrowOutMWh,shortFall,windDump)
       maxsupply=max(dfsum$dblrenew)
       bl<-ifelse((input$blmult*input$baseloadsize)>0,paste0("BL",input$blmult*input$baseloadsize,"MW"),"nobl")
       bsz<-ifelse((input$bmult*input$bsize)>0,paste0("BATT",comma(input$bsize*input$bmult),"MW"),"nobatt")
@@ -1002,11 +1002,12 @@ server <- function(ui,input, output,session) {
       thelabs=labsshort
       dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","renew","dblrenew"),names_to="Level",values_to="MW") 
       thetitle=dataSetTitles[input$datasetpick]
-      if (input$showWindDemand) {
-        dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
+      if (input$showWindDemand) { # we include the curtailed wind in here
+        #dfcs<-dfcumshort %>% pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
+        dfcs<-dfcumshort %>% mutate(wind=wind+windDump) |> pivot_longer(cols=c("demand","wind"),names_to="Level",values_to="MW") 
         x<-str_split_1(thetitle,"\n")
         #print(x)
-        thetitle<-paste0("Electricity demand vs wind\n",x[2])
+        thetitle<-paste0("Electricity demand vs wind (including curtailed wind)\n",x[2])
         thecols=colswind
         thelabs=labswind
       }
