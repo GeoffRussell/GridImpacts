@@ -77,6 +77,7 @@ dataSets <- c(
   "(QLD) end of December 2024" = "openNEMMerge-QLD-30-12-2024-19D.csv",
   "(NSW) end of December 2024" = "openNEMMerge-NSW-30-12-2024-19D.csv",
   "(SA) June 2024 (1st week only)" = "openNEMMerge-June-1stWeek-2024.csv",
+  "(SA) WE 11 January 2026" = "openNem-SA-11-1-26-7D.csv",
   "(SA) WE 30 January 2024" = "openNem-SA-30-01-24-7D.csv",
   "(SA) WE 30 November 2023" = "opennem-30-11-2023sa5.csv",
   "(SA) Heatwave-to-9th Jan 2026" = "openNem-SA-9-1-26-7D.csv",
@@ -85,6 +86,7 @@ dataSets <- c(
   "(SA) March heatwave, 2024" = "openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles <- c(
+  "(SA) WE 11 January 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 11 January 2026",
   "(SA) PE 3 Jan 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 3 January 2026",
   "(SA) PE 20 Nov 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 20 November 2025",
   "(NEM) PE 28 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
@@ -1062,14 +1064,18 @@ server <- function(ui,input, output,session) {
       print(paste0("MaxShortFall: ",maxshort," MaxGen: ",comma(sum(dfsum$dblrenew/12)/1000),"GWh Coef: ",coef," MaxCurt: ",comma(maxcurt/1000),"GWh\n"))
       percurt<-maxcurt/sum(dfsum$dblrenew/12)
       peractcurt<-actCurtailed/sum(dfsum$dblrenew/12)
+      percShort<-maxshort/sum(dfsum$dblrenew/12)
       print(paste0("PerCurt:",100*percurt,"%\n"))
+      totdemand<-dfsum %>% summarise(totdemand=sum(demand/12))
+      sh<-dfsum %>% summarise(max(cumShortMWh))
+      percShort<-(totdemand-sh)/totdemand*100
       #print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
       #print(ll)
       lasttime<-dfsum$Time[nperiods-1]
       annotation=tibble(
           x=c(lasttime,lasttime),
           y=c(ay,ay*0.91),
-          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Model curtailment: ",comma(maxcurt/1000)," GWh (",comma1(100*percurt),"% of generation)"))
+          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh (",comma1(100-percShort),"% of demand)"),paste0("Model curtailment: ",comma(maxcurt/1000)," GWh (",comma1(100*percurt),"% of generation)"))
       ) 
       if (actCurtailed) {
         annotation<-bind_rows(annotation,tibble(x=lasttime,y=ay*0.82,label=c(paste0("Actual curtailment: ",comma(actCurtailed/1000)," GWh (",comma(100*peractcurt),"% of generation)"))))
