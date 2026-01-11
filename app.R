@@ -490,7 +490,7 @@ ui <- function(request) {
                 ), 
                 
                 # Application title
-                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.100+costs)"),
+                titlePanel("GridImpacts: Storage, overbuild, baseload and gas peaking (v0.101+costs)"),
                 verticalLayout(
                   mainPanel(
                     fluidRow(
@@ -1059,16 +1059,20 @@ server <- function(ui,input, output,session) {
         coef=maxsupply/mm*1000
       }
       #print(paste0("MaxShortFall: ",maxshort," MaxSupply: ",maxsupply," Coef: ",coef,"\n"))
+      print(paste0("MaxShortFall: ",maxshort," MaxGen: ",comma(sum(dfsum$dblrenew/12)/1000),"GWh Coef: ",coef," MaxCurt: ",comma(maxcurt/1000),"GWh\n"))
+      percurt<-maxcurt/sum(dfsum$dblrenew/12)
+      peractcurt<-actCurtailed/sum(dfsum$dblrenew/12)
+      print(paste0("PerCurt:",100*percurt,"%\n"))
       #print(paste0("MaxShortFall: ",max(dfsum$cumShortMWh),"\n"))
       #print(ll)
       lasttime<-dfsum$Time[nperiods-1]
       annotation=tibble(
           x=c(lasttime,lasttime),
           y=c(ay,ay*0.91),
-          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Model curtailment: ",comma(maxcurt/1000)," GWh"))
+          label=c(paste0("Shortfall: ",comma(maxshort/1000)," GWh"),paste0("Model curtailment: ",comma(maxcurt/1000)," GWh (",comma1(100*percurt),"% of generation)"))
       ) 
       if (actCurtailed) {
-        annotation<-bind_rows(annotation,tibble(x=lasttime,y=ay*0.82,label=c(paste0("Actual curtailment: ",comma(actCurtailed/1000)," GWh"))))
+        annotation<-bind_rows(annotation,tibble(x=lasttime,y=ay*0.82,label=c(paste0("Actual curtailment: ",comma(actCurtailed/1000)," GWh (",comma(100*peractcurt),"% of generation)"))))
       }
       p<-dfcs %>% ggplot() + 
         geom_line(aes(x=Time,y=MW,color=Level),linewidth=0.6) +  
