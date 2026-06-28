@@ -58,6 +58,8 @@ cdpsa<-cdp3 |> filter(Region=="SA")
 # Datasets
 #-----------------------------------------------------
 dataSets <- c(
+  "(SA) WE 26 June 2026" = "openNem-SA-26-6-26-7D.csv",
+  "(SA) PE 23 May 2026" = "openNEMMerge-SA-23-05-2026-19D.csv",
   "(SA) PE 20 Nov 2025" = "openNEMMerge-SA-20-11-2025-18D.csv",
   "(SA) 3DE 27 June 2025" = "openNem-SA-27-6-25-3D.csv",
   "(SA) WE 13 April 2025" = "openNem-SA-13-4-25-7D.csv",
@@ -86,7 +88,9 @@ dataSets <- c(
   "(SA) March heatwave, 2024" = "openNem-SA-12-03-24-7D.csv"
 )
 dataSetTitles <- c(
-  "(SA) WE 11 January 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Week ending 11 January 2026",
+  "(SA) WE 26 June 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) WE 26 June 2026",
+  "(SA) PE 23 May 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 23 May 2026",
+  "(SA) WE 11 January 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 11 January 2026",
   "(SA) PE 3 Jan 2026" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 3 January 2026",
   "(SA) PE 20 Nov 2025" = "Electricity renewable/demand/curtailment/shortfall\n(SA) Period ending 20 November 2025",
   "(NEM) PE 28 June 2025" = "Electricity renewable/demand/curtailment/shortfall\n(NEM) Period ending 28 June 2025",
